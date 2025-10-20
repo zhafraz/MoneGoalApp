@@ -83,7 +83,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selamat Datang kembali"
+                    android:text="Selamat Datang "
                     android:textColor="#2C3E50"
                     android:textSize="22sp"
                     android:textStyle="bold"
@@ -143,12 +143,14 @@
                     android:layout_marginBottom="25dp"/>
 
                 <!-- Login Button -->
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnLogin"
                     android:text="Masuk Sekarang"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:background="@drawable/bg_button_gradient"
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"
                     android:textSize="16sp"
