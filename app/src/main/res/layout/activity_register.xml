@@ -153,17 +153,18 @@
                     android:layout_marginBottom="20dp" />
 
                 <!-- Tombol daftar -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRegister"
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnLogin"
+                    android:text="Daftar Sekarang"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:text="Daftar Sekarang"
+                    android:background="@drawable/bg_button_gradient"
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
+                    android:textColor="#FFFFFF"
                     android:textStyle="bold"
                     android:textSize="16sp"
-                    android:backgroundTint="@color/blue_600"
-                    android:textColor="@android:color/white"
-                    app:cornerRadius="15dp"
-                    app:elevation="4dp" />
+                    android:layout_marginBottom="20dp"/>
 
                 <!-- Teks bawah -->
                 <TextView
