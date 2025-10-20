@@ -121,7 +121,7 @@
                     android:id="@+id/etEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Email"
+                    android:hint="Email kamu"
                     android:drawableStart="@drawable/ic_email"
                     android:inputType="textEmailAddress"
                     android:padding="12dp"
@@ -154,7 +154,7 @@
 
                 <!-- Tombol daftar -->
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnLogin"
+                    android:id="@+id/btnRegister"
                     android:text="Daftar Sekarang"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
