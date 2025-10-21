@@ -1,7 +1,6 @@
 package com.example.monegoal
 
 import android.os.Bundle
-import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -14,8 +13,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class RegisterActivity : AppCompatActivity() {
 
-    // Views
     private lateinit var etNama: EditText
+    private lateinit var etUsername: EditText
     private lateinit var etSekolah: EditText
     private lateinit var spJenjang: Spinner
     private lateinit var etEmail: EditText
@@ -24,21 +23,19 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var btnRegister: androidx.appcompat.widget.AppCompatButton
     private lateinit var tvLogin: TextView
 
-    // Firebase
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
-
-    // Progress dialog
     private var progressDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register) // pastikan nama layout sesuai
+        setContentView(R.layout.activity_register)
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
         etNama = findViewById(R.id.etNama)
+        etUsername = findViewById(R.id.etUsername)
         etSekolah = findViewById(R.id.etSekolah)
         spJenjang = findViewById(R.id.spJenjang)
         etEmail = findViewById(R.id.etEmail)
@@ -54,14 +51,8 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         val jenjangList = listOf("Pilih jenjang sekolah", "SD", "SMP", "SMA", "SMK")
-        val adapter = object : ArrayAdapter<String>(
-            this,
-            android.R.layout.simple_spinner_item,
-            jenjangList
-        ) {
-            override fun isEnabled(position: Int): Boolean {
-                return position != 0
-            }
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, jenjangList) {
+            override fun isEnabled(position: Int): Boolean = position != 0
         }
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spJenjang.adapter = adapter
@@ -71,17 +62,13 @@ class RegisterActivity : AppCompatActivity() {
             .setCancelable(false)
             .create()
 
-        btnRegister.setOnClickListener {
-            registerUser()
-        }
-
-        tvLogin.setOnClickListener {
-            finish()
-        }
+        btnRegister.setOnClickListener { registerUser() }
+        tvLogin.setOnClickListener { finish() }
     }
 
     private fun registerUser() {
         val nama = etNama.text.toString().trim()
+        val username = etUsername.text.toString().trim()
         val sekolah = etSekolah.text.toString().trim()
         val jenjang = if (spJenjang.selectedItemPosition > 0) spJenjang.selectedItem.toString() else ""
         val email = etEmail.text.toString().trim()
@@ -94,8 +81,13 @@ class RegisterActivity : AppCompatActivity() {
                 etNama.requestFocus()
                 return
             }
+            username.isEmpty() -> {
+                etUsername.error = "Username diperlukan"
+                etUsername.requestFocus()
+                return
+            }
             sekolah.isEmpty() -> {
-                etSekolah.error = "Asal sekolah/username diperlukan"
+                etSekolah.error = "Asal sekolah diperlukan"
                 etSekolah.requestFocus()
                 return
             }
@@ -134,28 +126,25 @@ class RegisterActivity : AppCompatActivity() {
                         return@addOnCompleteListener
                     }
 
-                    val profileUpdates = userProfileChangeRequest {
-                        displayName = nama
-                    }
+                    val profileUpdates = userProfileChangeRequest { displayName = nama }
                     firebaseUser.updateProfile(profileUpdates)
 
                     val userMap = hashMapOf<String, Any?>(
                         "uid" to uid,
                         "name" to nama,
+                        "username" to username,
                         "school" to sekolah,
                         "grade" to jenjang,
                         "email" to email,
                         "createdAt" to FieldValue.serverTimestamp()
                     )
 
-                    firestore.collection("users")
-                        .document(uid)
+                    firestore.collection("users").document(uid)
                         .set(userMap)
                         .addOnSuccessListener {
                             progressDialog?.dismiss()
                             btnRegister.isEnabled = true
                             Toast.makeText(this, "Registrasi berhasil. Silakan login.", Toast.LENGTH_SHORT).show()
-
                             finish()
                         }
                         .addOnFailureListener { e ->

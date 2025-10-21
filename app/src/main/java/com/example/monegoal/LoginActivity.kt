@@ -89,23 +89,19 @@ class LoginActivity : AppCompatActivity() {
                     btnLogin.isEnabled = true
 
                     if (task.isSuccessful) {
-                        // save email if remember checked
                         if (cbRemember.isChecked) {
                             getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                                 .putString(KEY_REMEMBER, email)
                                 .apply()
                         } else {
-                            // remove saved email
                             getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                                 .remove(KEY_REMEMBER)
                                 .apply()
                         }
 
-                        // go to MainActivity and clear back stack
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
-                        // optionally finish() not necessary because flags cleared
                     } else {
                         val err = task.exception?.localizedMessage ?: "Gagal login"
                         Toast.makeText(this@LoginActivity, err, Toast.LENGTH_LONG).show()
