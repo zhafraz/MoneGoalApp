@@ -39,7 +39,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Finpress"
+                    android:text="MoneGoal"
                     android:textSize="36sp"
                     android:textStyle="bold"
                     android:textColor="#4A90E2"
@@ -83,7 +83,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selamat Datang Finpres YTTA"
+                    android:text="Selamat Datang"
                     android:textColor="#2C3E50"
                     android:textSize="22sp"
                     android:textStyle="bold"

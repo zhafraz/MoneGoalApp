@@ -63,6 +63,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:padding="15dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -91,7 +92,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Username"
-                    android:drawableStart="@drawable/ic_school"
                     android:padding="12dp"
                     android:background="@drawable/input_field"
                     android:layout_marginBottom="12dp" />
@@ -121,8 +121,7 @@
                     android:id="@+id/etEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Email kamu"
-                    android:drawableStart="@drawable/ic_email"
+                    android:hint="Email"
                     android:inputType="textEmailAddress"
                     android:padding="12dp"
                     android:background="@drawable/input_field"
@@ -134,7 +133,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Password"
-                    android:drawableStart="@drawable/ic_lock"
                     android:inputType="textPassword"
                     android:padding="12dp"
                     android:background="@drawable/input_field"
@@ -146,7 +144,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Konfirmasi Password"
-                    android:drawableStart="@drawable/ic_lock"
                     android:inputType="textPassword"
                     android:padding="12dp"
                     android:background="@drawable/input_field"
