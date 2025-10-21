@@ -1,191 +1,226 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_login_gradient"
+    android:background="#E0F7FA"
     android:fillViewport="true">
 
+<LinearLayout
+android:id="@+id/main"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:orientation="vertical"
+android:padding="24dp"
+android:gravity="center_horizontal">
+
+<!-- Header dan Ilustrasi -->
+<FrameLayout
+    android:layout_width="120dp"
+    android:layout_height="120dp"
+    android:layout_marginTop="32dp"
+    android:layout_marginBottom="16dp"
+    android:background="@drawable/bg_circle_yellow"
+android:elevation="8dp">
+
+<!-- Placeholder untuk Ilustrasi (misal: Buku Tabungan/Koin) -->
+<ImageView
+    android:layout_width="120dp"
+    android:layout_height="120dp"
+    android:src="@drawable/logo_MoneGoal"
+    android:layout_gravity="center" />
+</FrameLayout>
+
+<TextView
+android:id="@+id/tvTitle"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Yuk, Mulai Menabung!"
+android:textColor="#004D40"
+android:textSize="28sp"
+android:textStyle="bold"
+android:fontFamily="sans-serif-medium"
+android:layout_marginBottom="8dp" />
+
+<TextView
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Isi data dirimu, raih impianmu!"
+android:textColor="#4DB6AC"
+android:textSize="18sp"
+android:layout_marginBottom="32dp" />
+
+    <!-- Card untuk form -->
+<androidx.cardview.widget.CardView
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+app:cardCornerRadius="16dp"
+app:cardElevation="8dp"
+android:layout_marginHorizontal="8dp"
+android:backgroundTint="@android:color/white"
+android:layout_marginBottom="20dp">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Nama Panggilan -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nama"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etNama"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Masukkan Nama"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+    android:layout_marginBottom="16dp" />
+
+    <!-- Sekolah -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nama"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etSekolah"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Masukkan Nama Sekolah"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+    android:layout_marginBottom="16dp" />
+
+    <!-- Nama Sekolah/Orang Tua (opsional, ganti jadi Username) -->
+    <TextView
+        android:id="@+id/etEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etUsername"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Masukkan Email"
+        android:inputType="textVisiblePassword"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+    android:layout_marginBottom="16dp" />
+
+    <!-- Usia / Jenjang Kelas (Spinner) -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kelas Kamu"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp" />
+
+    <Spinner
+        android:id="@+id/spJenjang"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_input_rounded"
+        android:paddingHorizontal="16dp"
+        android:spinnerMode="dropdown"
+        android:layout_marginBottom="16dp" />
+    <!-- Jangan lupa siapkan array string untuk data spinner ini! -->
+
+    <!-- PIN Rahasia (Ganti Password jadi PIN 4 digit untuk anak) -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buat Password"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Masukkan Password"
+        android:inputType="numberPassword"
+        android:maxLength="4"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Konfirmasi PIN -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ulangi Password"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etPasswordConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Ulangi Password"
+        android:inputType="numberPassword"
+        android:maxLength="4"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Tombol daftar -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnRegister"
+        android:text="Siap Menabung!"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/bg_button_gradient"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Pindah ke Login -->
     <LinearLayout
-        android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="horizontal">
 
-        <!-- Judul -->
         <TextView
-            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MoneGoal"
-            android:textColor="@color/black"
-            android:textSize="36sp"
+            android:text="Sudah punya akun?"
+            android:textColor="#757575"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" Masuk di sini"
+            android:textColor="#FFC107"
             android:textStyle="bold"
-            android:fontFamily="sans-serif-medium"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Buat akun baru kamu"
-            android:textColor="#5A6C7D"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Icon bulat -->
-        <LinearLayout
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:background="@drawable/bg_circle_blue"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_marginBottom="24dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="✍️"
-                android:textSize="40sp" />
-        </LinearLayout>
-
-        <!-- Card untuk form -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="25dp"
-            app:cardElevation="8dp"
-            android:backgroundTint="@android:color/white"
-            android:layout_marginBottom="20dp"
-            android:padding="24dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="15dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Selamat Datang!"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="#2C3E50"
-                    android:gravity="center"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Nama Lengkap -->
-                <EditText
-                    android:id="@+id/etNama"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Nama Lengkap"
-                    android:padding="12dp"
-                    android:background="@drawable/input_field"
-                    android:layout_marginBottom="12dp" />
-
-                <!-- Asal Sekolah -->
-                <EditText
-                    android:id="@+id/etSekolah"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Username"
-                    android:padding="12dp"
-                    android:background="@drawable/input_field"
-                    android:layout_marginBottom="12dp" />
-
-                <!-- Jenjang Sekolah (DROPDOWN) -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Jenjang Sekolah"
-                    android:textColor="#2C3E50"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="6dp"
-                    android:layout_marginTop="6dp" />
-
-                <Spinner
-                    android:id="@+id/spJenjang"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input_field"
-                    android:padding="12dp"
-                    android:spinnerMode="dropdown"
-                    android:layout_marginBottom="12dp" />
-
-                <!-- Email -->
-                <EditText
-                    android:id="@+id/etEmail"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Email"
-                    android:inputType="textEmailAddress"
-                    android:padding="12dp"
-                    android:background="@drawable/input_field"
-                    android:layout_marginBottom="12dp" />
-
-                <!-- Password -->
-                <EditText
-                    android:id="@+id/etPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Password"
-                    android:inputType="textPassword"
-                    android:padding="12dp"
-                    android:background="@drawable/input_field"
-                    android:layout_marginBottom="20dp" />
-
-                <!-- Konfirmasi Password -->
-                <EditText
-                    android:id="@+id/etPasswordConfirm"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Konfirmasi Password"
-                    android:inputType="textPassword"
-                    android:padding="12dp"
-                    android:background="@drawable/input_field"
-                    android:layout_marginBottom="20dp" />
-
-                <!-- Tombol daftar -->
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnRegister"
-                    android:text="Daftar Sekarang"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:background="@drawable/bg_button_gradient"
-                    android:backgroundTint="@null"
-                    app:backgroundTint="@null"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="20dp"/>
-
-                <!-- Teks bawah -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sudah punya akun?"
-                    android:textColor="#5A6C7D"
-                    android:textSize="14sp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="16dp" />
-
-                <TextView
-                    android:id="@+id/tvLogin"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Masuk di sini"
-                    android:textColor="@color/black"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_gravity="center"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            android:textSize="15sp"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
-</ScrollView>
+</LinearLayout>
+</androidx.cardview.widget.CardView>
+    </LinearLayout>
+    </ScrollView>
