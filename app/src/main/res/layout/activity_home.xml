@@ -25,8 +25,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_header_gradient"
-            android:padding="24dp"
-            android:elevation="4dp">
+                android:padding="24dp"
+                android:elevation="4dp">
 
             <!-- Judul Aplikasi & Tombol Notifikasi -->
             <TextView
@@ -40,11 +40,10 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
-                <ImageButton
+                <ImageView
                     android:id="@+id/btnNotification"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:background="@drawable/bg_circle_yellow"
                     android:src="@drawable/notif"
                     android:contentDescription="Notifikasi"
                     android:padding="8dp"
@@ -344,9 +343,6 @@ android:paddingHorizontal="16dp"
 tools:itemCount="2"
 tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
 tools:listitem="@layout/item_goal" />
-
-    <!-- Tombol Tambah Tujuan (Optional, bisa juga lewat Quick Action) -->
-    <!-- FAB yang sudah ada di ConstraintLayout sebelumnya kita hapus, karena sudah ada di Quick Action Grid -->
 
     </LinearLayout>
     </ScrollView>

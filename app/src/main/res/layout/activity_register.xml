@@ -89,7 +89,7 @@ android:layout_marginBottom="20dp">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nama"
+        android:text="Nama Sekolah"
         android:textColor="#004D40"
         android:textStyle="bold"
         android:layout_marginBottom="4dp"/>
