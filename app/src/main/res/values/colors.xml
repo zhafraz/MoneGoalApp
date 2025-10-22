@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary Colors (Teal/Cyan) -->
+    <color name="primary_50">#E0F7FA</color>
+    <color name="primary_500">#00BCD4</color>
+    <color name="primary_600">#00ACC1</color>
+
+    <!-- Secondary Colors (Green) -->
+    <color name="secondary_50">#E8F5E9</color>
+    <color name="secondary_500">#4CAF50</color>
+    <color name="secondary_600">#43A047</color>
+
+    <!-- General Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray_100">#F5F5F5</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_600">#757575</color>
+    <color name="gray_800">#424242</color>
 </resources>
