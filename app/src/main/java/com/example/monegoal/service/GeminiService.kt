@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 object GeminiService {
 
-    private const val API_KEY = "AIzaSyDCrkA5pszAE7Yxfz0TUlqhPZthZ3D6CN0"
+    private const val API_KEY = "AI......."
     private val gson = Gson()
 
     private val client by lazy {
