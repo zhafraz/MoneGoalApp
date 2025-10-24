@@ -8,7 +8,6 @@
     android:background="#E0F7FA"
     tools:context=".MainActivity">
 
-    <!-- ScrollView untuk semua konten agar bisa di-scroll -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -97,7 +96,7 @@
                                     android:id="@+id/tvUserName"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Husna Bening Sanubari"
+                                    android:text="Nama"
                                     android:textSize="18sp"
                                     android:textStyle="bold"
                                     android:textColor="#FFFFFF"/>
@@ -105,7 +104,7 @@
                                     android:id="@+id/tvUserClass"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="SMP N 5 Yogyakarta"
+                                    android:text="Sekolah"
                                     android:textSize="14sp"
                                     android:textColor="#B2DFDB"/>
                             </LinearLayout>
@@ -141,7 +140,7 @@
                                     android:id="@+id/tvCurrentBalance"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Rp 350.000"
+                                    android:text="Rp 0"
                                     android:textSize="26sp"
                                     android:textStyle="bold"
                                     android:textColor="#ffffff"/>
@@ -164,7 +163,7 @@
                                     android:id="@+id/tvCurrentPoints"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="1.750"
+                                    android:text="0"
                                     android:textSize="26sp"
                                     android:textStyle="bold"
                                     android:textColor="#FFFFFF"/>

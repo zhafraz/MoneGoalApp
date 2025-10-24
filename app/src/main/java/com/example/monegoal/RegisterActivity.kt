@@ -126,6 +126,8 @@ class RegisterActivity : AppCompatActivity() {
                         return@addOnCompleteListener
                     }
 
+                    "AIzaSyDCrkA5pszAE7Yxfz0TUlqhPZthZ3D6CN0"
+
                     val profileUpdates = userProfileChangeRequest { displayName = nama }
                     firebaseUser.updateProfile(profileUpdates)
 
@@ -136,6 +138,8 @@ class RegisterActivity : AppCompatActivity() {
                         "school" to sekolah,
                         "grade" to jenjang,
                         "email" to email,
+                        "balance" to 0,
+                        "points" to 0,
                         "createdAt" to FieldValue.serverTimestamp()
                     )
 
