@@ -10,6 +10,10 @@
     <color name="secondary_500">#4CAF50</color>
     <color name="secondary_600">#43A047</color>
 
+
+    <color name="warna_kapital">#004D40</color>
+    <color name="warna_kecil">#B2DFDB</color>
+
     <!-- General Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>

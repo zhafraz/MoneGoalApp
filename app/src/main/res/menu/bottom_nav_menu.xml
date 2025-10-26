@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_beranda"
+        android:icon="@drawable/home"
+        android:title="Beranda" />
+
+    <item
+        android:id="@+id/nav_campaign"
+        android:icon="@drawable/giftbox"
+        android:title="Campaign" />
+
+    <item
+        android:id="@+id/nav_program"
+        android:icon="@drawable/trophy"
+        android:title="Program" />
+
+    <item
+        android:id="@+id/nav_ai_bantuan"
+        android:icon="@drawable/bot"
+        android:title="AI Bantuan" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/profile"
+        android:title="Profile" />
+
+</menu>
