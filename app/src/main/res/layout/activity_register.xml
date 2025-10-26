@@ -28,7 +28,7 @@ android:elevation="8dp">
 <ImageView
     android:layout_width="120dp"
     android:layout_height="120dp"
-    android:src="@drawable/logo_MoneGoal"
+    android:src="@drawable/monegoal_logo"
     android:layout_gravity="center" />
 </FrameLayout>
 
@@ -71,7 +71,7 @@ android:layout_marginBottom="20dp">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nama"
+        android:text="Nama Lengkap"
         android:textColor="#004D40"
         android:textStyle="bold"
         android:layout_marginBottom="4dp"/>
@@ -80,10 +80,64 @@ android:layout_marginBottom="20dp">
         android:id="@+id/etNama"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:hint="Masukkan Nama"
+        android:hint="Masukkan Nama Lengkap"
         android:paddingStart="16dp"
         android:background="@drawable/bg_input_rounded"
-    android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etUsername"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Masukkan Nama Lengkap"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/Email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:hint="Masukkan Email"
+        android:inputType="textEmailAddress"
+        android:paddingStart="16dp"
+        android:background="@drawable/bg_input_rounded"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Jenjang"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp" />
+
+    <Spinner
+        android:id="@+id/spJenjang"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_input_rounded"
+        android:paddingHorizontal="16dp"
+        android:spinnerMode="dropdown"
+        android:layout_marginBottom="16dp" />
 
     <!-- Sekolah -->
     <TextView
@@ -101,49 +155,8 @@ android:layout_marginBottom="20dp">
         android:hint="Masukkan Nama Sekolah"
         android:paddingStart="16dp"
         android:background="@drawable/bg_input_rounded"
-    android:layout_marginBottom="16dp" />
-
-    <!-- Nama Sekolah/Orang Tua (opsional, ganti jadi Username) -->
-    <TextView
-        android:id="@+id/etEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email"
-        android:textColor="#004D40"
-        android:textStyle="bold"
-        android:layout_marginBottom="4dp"/>
-
-    <EditText
-        android:id="@+id/etUsername"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:hint="Masukkan Email"
-        android:inputType="textVisiblePassword"
-        android:paddingStart="16dp"
-        android:background="@drawable/bg_input_rounded"
-    android:layout_marginBottom="16dp" />
-
-    <!-- Usia / Jenjang Kelas (Spinner) -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Kelas Kamu"
-        android:textColor="#004D40"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp" />
-
-    <Spinner
-        android:id="@+id/spJenjang"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_input_rounded"
-        android:paddingHorizontal="16dp"
-        android:spinnerMode="dropdown"
         android:layout_marginBottom="16dp" />
-    <!-- Jangan lupa siapkan array string untuk data spinner ini! -->
 
-    <!-- PIN Rahasia (Ganti Password jadi PIN 4 digit untuk anak) -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -157,8 +170,8 @@ android:layout_marginBottom="20dp">
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:hint="Masukkan Password"
-        android:inputType="numberPassword"
-        android:maxLength="4"
+        android:inputType="textPassword"
+        android:maxLength="6"
         android:paddingStart="16dp"
         android:background="@drawable/bg_input_rounded"
         android:layout_marginBottom="16dp" />
@@ -177,8 +190,8 @@ android:layout_marginBottom="20dp">
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:hint="Ulangi Password"
-        android:inputType="numberPassword"
-        android:maxLength="4"
+        android:inputType="textPassword"
+        android:maxLength="6"
         android:paddingStart="16dp"
         android:background="@drawable/bg_input_rounded"
         android:layout_marginBottom="32dp" />

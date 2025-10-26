@@ -8,28 +8,24 @@
     android:background="#E0F7FA"
     tools:context=".MainActivity">
 
-    <!-- ScrollView untuk semua konten agar bisa di-scroll -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
-        app:layout_constraintTop_toTopOf="parent">
-
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            >
+            android:paddingBottom="80dp">
 
             <!-- HEADER SECTION (Background/User Card) -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_header_gradient"
-                android:elevation="4dp"
-                android:padding="24dp">
+                android:padding="24dp"
+                android:elevation="4dp">
 
                 <!-- Judul Aplikasi & Tombol Notifikasi -->
                 <TextView
@@ -37,23 +33,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="MoneGoal"
-                    android:textColor="#004D40"
                     android:textSize="28sp"
                     android:textStyle="bold"
+                    android:textColor="#004D40"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"/>
 
                 <ImageView
                     android:id="@+id/btnNotification"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
+                    android:src="@drawable/notif"
                     android:contentDescription="Notifikasi"
-                    android:elevation="2dp"
                     android:padding="8dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/notif"
+                    android:elevation="2dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"/>
 
                 <!-- User/Balance Card -->
                 <androidx.cardview.widget.CardView
@@ -68,51 +64,49 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_card_balance_gradient"
                         android:orientation="vertical"
+                        android:background="@drawable/bg_card_balance_gradient"
                         android:padding="20dp">
 
                         <!-- Info User -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
+                            android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            android:layout_marginBottom="16dp">
 
                             <ImageView
                                 android:id="@+id/imgProfile"
                                 android:layout_width="56dp"
                                 android:layout_height="56dp"
-                                android:layout_marginEnd="12dp"
+                                android:src="@drawable/user"
                                 android:background="@drawable/bg_circle_yellow"
-                                android:contentDescription="Foto Profil"
                                 android:padding="8dp"
                                 android:scaleType="fitCenter"
-                                android:src="@drawable/user" />
+                                android:contentDescription="Foto Profil"
+                                android:layout_marginEnd="12dp"/>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:orientation="vertical">
-
                                 <TextView
                                     android:id="@+id/tvUserName"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Husna Bening Sanubari"
-                                    android:textColor="#FFFFFF"
+                                    android:text="Nama"
                                     android:textSize="18sp"
-                                    android:textStyle="bold" />
-
+                                    android:textStyle="bold"
+                                    android:textColor="#FFFFFF"/>
                                 <TextView
                                     android:id="@+id/tvUserClass"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="SMP N 5 Yogyakarta"
-                                    android:textColor="#B2DFDB"
-                                    android:textSize="14sp" />
+                                    android:text="Sekolah"
+                                    android:textSize="14sp"
+                                    android:textColor="#B2DFDB"/>
                             </LinearLayout>
                         </LinearLayout>
 
@@ -120,8 +114,8 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginBottom="12dp"
-                            android:background="#80D8F6" />
+                            android:background="#80D8F6"
+                            android:layout_marginBottom="12dp"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -133,50 +127,46 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:gravity="center_horizontal"
-                                android:orientation="vertical">
-
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal">
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="SALDO KAS"
-                                    android:textColor="#B2DFDB"
+                                    android:textStyle="bold"
                                     android:textSize="12sp"
-                                    android:textStyle="bold" />
-
+                                    android:textColor="#B2DFDB"/>
                                 <TextView
                                     android:id="@+id/tvCurrentBalance"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Rp 350.000"
-                                    android:textColor="#ffffff"
+                                    android:text="Rp 0"
                                     android:textSize="26sp"
-                                    android:textStyle="bold" />
+                                    android:textStyle="bold"
+                                    android:textColor="#ffffff"/>
                             </LinearLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:gravity="center_horizontal"
-                                android:orientation="vertical">
-
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal">
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textStyle="bold"
                                     android:text="POIN REWARD"
-                                    android:textColor="#B2DFDB"
                                     android:textSize="12sp"
-                                    android:textStyle="bold" />
-
+                                    android:textColor="#B2DFDB"/>
                                 <TextView
                                     android:id="@+id/tvCurrentPoints"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="1.750"
-                                    android:textColor="#FFFFFF"
+                                    android:text="0"
                                     android:textSize="26sp"
-                                    android:textStyle="bold" />
+                                    android:textStyle="bold"
+                                    android:textColor="#FFFFFF"/>
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
@@ -187,54 +177,51 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="✈️ Aksi Cepat"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#004D40"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:paddingHorizontal="24dp"
-                android:text="✈️ Aksi Cepat"
-                android:textColor="#004D40"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:paddingHorizontal="24dp"/>
 
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:alignmentMode="alignMargins"
                 android:columnCount="2"
+                android:rowCount="2"
+                android:alignmentMode="alignMargins"
                 android:columnOrderPreserved="false"
-                android:paddingHorizontal="16dp"
-                android:rowCount="2">
+                android:paddingHorizontal="16dp">
 
                 <!-- Action: Tambah Saldo -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardAddMoney"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_rowWeight="1"
                     android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:layout_margin="8dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
+                        android:padding="16dp"
+                        android:gravity="center">
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/wallet" />
-
+                            android:src="@drawable/wallet"
+                            android:layout_marginBottom="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tambah Saldo"
+                            android:textStyle="bold"
                             android:textColor="#004D40"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="14sp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -243,32 +230,29 @@
                     android:id="@+id/cardAddGoal"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_rowWeight="1"
                     android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:layout_margin="8dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
+                        android:padding="16dp"
+                        android:gravity="center">
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/winning" />
-
+                            android:src="@drawable/winning"
+                            android:layout_marginBottom="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Program Prestasi"
+                            android:textStyle="bold"
                             android:textColor="#004D40"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="14sp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -277,32 +261,29 @@
                     android:id="@+id/cardHistory"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_rowWeight="1"
                     android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:layout_margin="8dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
+                        android:padding="16dp"
+                        android:gravity="center">
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/robot" />
-
+                            android:src="@drawable/robot"
+                            android:layout_marginBottom="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Smart Advisor"
+                            android:textStyle="bold"
                             android:textColor="#004D40"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="14sp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -311,32 +292,29 @@
                     android:id="@+id/cardRedeem"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_rowWeight="1"
                     android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:layout_margin="8dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
+                        android:padding="16dp"
+                        android:gravity="center">
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/newspaper" />
-
+                            android:src="@drawable/newspaper"
+                            android:layout_marginBottom="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Berita"
+                            android:textStyle="bold"
                             android:textColor="#004D40"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="14sp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </GridLayout>
@@ -345,13 +323,13 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="🌟 Program Terpopuler"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#004D40"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:paddingHorizontal="24dp"
-                android:text="🌟 Program Terpopuler"
-                android:textColor="#004D40"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:paddingHorizontal="24dp"/>
 
             <!-- RecyclerView untuk daftar tujuan -->
             <!-- Kita ubah ini menjadi tinggi tetap agar tidak bentrok dengan ScrollView utama -->
@@ -381,18 +359,5 @@
     <!--android:backgroundTint="#FFC107"-->
     <!--app:layout_constraintBottom_toBottomOf="parent"-->
     <!--app:layout_constraintEnd_toEndOf="parent"/>-->
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_bottom_nav"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/bottom_nav_color"
-        app:itemTextColor="@color/bottom_nav_color"
-        android:elevation="12dp"
-        android:translationZ="8dp"
-        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

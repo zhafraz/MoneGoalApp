@@ -9,7 +9,6 @@
     android:background="#E0F7FA"
     tools:context=".LoginActivity">
 
-    <!-- ScrollView untuk mendukung layar kecil -->
 <ScrollView
 android:id="@+id/scrollView"
 android:layout_width="0dp"
@@ -36,12 +35,10 @@ app:layout_constraintEnd_toEndOf="parent">
         android:background="@drawable/bg_circle_yellow"
     android:elevation="12dp">
 
-    <!-- Placeholder untuk Maskot/Ilustrasi Aplikasi -->
-    <!-- Kamu bisa ganti dengan Image Asset lucu di sini -->
     <ImageView
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/logo_MoneGoal"
+        android:src="@drawable/monegoal_logo"
         android:layout_gravity="center"
          />
 </FrameLayout>
