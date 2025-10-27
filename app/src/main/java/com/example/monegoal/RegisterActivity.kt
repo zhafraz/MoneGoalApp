@@ -126,8 +126,6 @@ class RegisterActivity : AppCompatActivity() {
                         return@addOnCompleteListener
                     }
 
-                    "AIzaSyDCrkA5pszAE7Yxfz0TUlqhPZthZ3D6CN0"
-
                     val profileUpdates = userProfileChangeRequest { displayName = nama }
                     firebaseUser.updateProfile(profileUpdates)
 

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -47,7 +46,7 @@ class AIBantuanActivity : AppCompatActivity() {
 
         // Pesan pembuka AI
         adapter.addMessage(Message("Halo, saya AI MoneGoal. Ada yang bisa dibantu?", isUser = false))
-        rvMessages.scrollToPosition(adapter.itemCount - 1)
+        if (adapter.itemCount > 0) rvMessages.scrollToPosition(adapter.itemCount - 1)
     }
 
     private fun submitUserMessage() {
@@ -57,7 +56,7 @@ class AIBantuanActivity : AppCompatActivity() {
         // Tambah pesan user ke list
         adapter.addMessage(Message(text, isUser = true))
         etMessageInput.setText("")
-        rvMessages.scrollToPosition(adapter.itemCount - 1)
+        if (adapter.itemCount > 0) rvMessages.scrollToPosition(adapter.itemCount - 1)
 
         // Tambah indikator typing AI
         addTypingIndicator()
@@ -65,27 +64,26 @@ class AIBantuanActivity : AppCompatActivity() {
         // Non-aktifkan tombol kirim agar user tidak spam
         setSendingState(true)
 
-        // Panggil GeminiService secara asinkron
+        // Panggil GeminiService secara asinkron (fungsi sekarang menerima 1 argumen)
         lifecycleScope.launch {
             try {
-                // Optional: system prompt pendek untuk membentuk persona
-                val systemPrompt = "Anda adalah asisten AI MoneGoal yang ramah dan membantu. Jawab ringkas dan praktis dalam bahasa Indonesia."
-                val reply = GeminiService.getChatResponse(text, systemPrompt)
+                // Panggil tanpa systemPrompt karena GeminiService sudah memakai SYSTEM_PROMPT internal
+                val reply = GeminiService.getChatResponse(text)
 
                 // Hapus indikator typing dan tampilkan jawaban AI
                 removeTypingIndicator()
                 adapter.addMessage(Message(reply, isUser = false))
-                rvMessages.scrollToPosition(adapter.itemCount - 1)
+                if (adapter.itemCount > 0) rvMessages.scrollToPosition(adapter.itemCount - 1)
             } catch (e: Exception) {
                 // Hapus indikator typing, tampilkan error friendly
                 removeTypingIndicator()
                 val errMsg = when {
-                    e.message?.contains("quota", true) == true -> "Kuota habis. Coba lagi besok atau gunakan proxy dengan kuota lebih besar."
-                    e.message?.contains("401") == true || e.message?.contains("API key", true) == true -> "Masalah otentikasi. Periksa API key."
+                    e.message?.contains("quota", true) == true -> "Kuota habis. Coba lagi besok atau hubungi admin."
+                    e.message?.contains("401", true) == true || e.message?.contains("API key", true) == true -> "Masalah otentikasi. Periksa API key."
                     else -> "Terjadi kesalahan: ${e.localizedMessage ?: "Tidak diketahui"}"
                 }
                 adapter.addMessage(Message(errMsg, isUser = false))
-                rvMessages.scrollToPosition(adapter.itemCount - 1)
+                if (adapter.itemCount > 0) rvMessages.scrollToPosition(adapter.itemCount - 1)
             } finally {
                 // Selalu enable tombol lagi
                 setSendingState(false)
@@ -97,7 +95,7 @@ class AIBantuanActivity : AppCompatActivity() {
         // hindari duplikat indikator
         if (messages.any { !it.isUser && it.text == TYPING_INDICATOR }) return
         adapter.addMessage(Message(TYPING_INDICATOR, isUser = false))
-        rvMessages.scrollToPosition(adapter.itemCount - 1)
+        if (adapter.itemCount > 0) rvMessages.scrollToPosition(adapter.itemCount - 1)
     }
 
     private fun removeTypingIndicator() {
@@ -111,11 +109,6 @@ class AIBantuanActivity : AppCompatActivity() {
     private fun setSendingState(isSending: Boolean) {
         btnSend.isEnabled = !isSending
         etMessageInput.isEnabled = !isSending
-        if (isSending) {
-            // optional visual change
-            btnSend.alpha = 0.6f
-        } else {
-            btnSend.alpha = 1.0f
-        }
+        btnSend.alpha = if (isSending) 0.6f else 1.0f
     }
 }

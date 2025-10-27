@@ -70,7 +70,6 @@
                             android:layout_width="32dp"
                             android:layout_height="32dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/baseline_person_24"
                             android:contentDescription="Avatar"
                             app:tint="#2E5BFF"/>
                     </androidx.cardview.widget.CardView>
@@ -90,7 +89,6 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
-                        android:background="@drawable/bg_stat_card"
                         android:layout_marginEnd="4dp">
 
                         <TextView
@@ -118,7 +116,6 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
-                        android:background="@drawable/bg_stat_card"
                         android:layout_marginHorizontal="4dp">
 
                         <TextView
@@ -146,7 +143,6 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
-                        android:background="@drawable/bg_stat_card"
                         android:layout_marginHorizontal="4dp">
 
                         <TextView
@@ -174,7 +170,6 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
-                        android:background="@drawable/bg_stat_card"
                         android:layout_marginStart="4dp">
 
                         <TextView
@@ -708,7 +703,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:background="@drawable/bg_approve_gradient"
                         android:gravity="center"
                         android:padding="18dp">
 
