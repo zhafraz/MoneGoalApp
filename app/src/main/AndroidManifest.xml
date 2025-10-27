@@ -12,9 +12,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MoneGoal"
         tools:targetApi="31">
-<!--        <activity-->
-<!--            android:name=".AIBantuanActivity"-->
-<!--            android:exported="false" />-->
+        <activity
+            android:name=".DetailAjuanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AjukanDanaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PengajuanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AIBantuanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
@@ -23,9 +38,6 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AIBantuanActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
