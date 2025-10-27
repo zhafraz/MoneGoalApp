@@ -5,12 +5,12 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#E0F7FA"
     tools:context=".DetailAjuanActivity">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#F5F7FA"
         android:fillViewport="true">
 
         <LinearLayout
@@ -25,6 +25,7 @@
                 android:orientation="vertical"
                 android:background="@drawable/bg_header_gradient"
                 android:padding="20dp"
+                android:elevation="4dp"
                 android:paddingBottom="32dp">
 
                 <!-- Header dengan Avatar -->
@@ -45,7 +46,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Selamat Datang 👋"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:alpha="0.9"
                             android:textSize="14sp"/>
 
@@ -53,7 +54,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Bu Sari"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:layout_marginTop="4dp"/>
@@ -70,6 +71,7 @@
                             android:layout_width="32dp"
                             android:layout_height="32dp"
                             android:layout_gravity="center"
+                            android:src="@drawable/profile"
                             android:contentDescription="Avatar"
                             app:tint="#2E5BFF"/>
                     </androidx.cardview.widget.CardView>
@@ -89,13 +91,14 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
+                        android:background="@drawable/bg_tag_yellow"
                         android:layout_marginEnd="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="3"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:textSize="24sp"
                             android:textStyle="bold"/>
 
@@ -103,7 +106,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Baru"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:alpha="0.9"
                             android:textSize="11sp"
                             android:layout_marginTop="4dp"/>
@@ -116,13 +119,14 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
+                        android:background="@drawable/bg_tag_yellow"
                         android:layout_marginHorizontal="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="15"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:textSize="24sp"
                             android:textStyle="bold"/>
 
@@ -130,7 +134,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Disetujui"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:alpha="0.9"
                             android:textSize="11sp"
                             android:layout_marginTop="4dp"/>
@@ -143,13 +147,14 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
+                        android:background="@drawable/bg_tag_yellow"
                         android:layout_marginHorizontal="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="2"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:textSize="24sp"
                             android:textStyle="bold"/>
 
@@ -157,7 +162,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Ditolak"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:alpha="0.9"
                             android:textSize="11sp"
                             android:layout_marginTop="4dp"/>
@@ -170,13 +175,14 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="12dp"
+                        android:background="@drawable/bg_tag_yellow"
                         android:layout_marginStart="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="1"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:textSize="24sp"
                             android:textStyle="bold"/>
 
@@ -184,7 +190,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Menunggu"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#000000"
                             android:alpha="0.9"
                             android:textSize="11sp"
                             android:layout_marginTop="4dp"/>
@@ -197,14 +203,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp"
-                android:layout_marginTop="-16dp">
+                android:padding="20dp">
 
                 <!-- DETAIL PENGAJUAN -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Detail Pengajuan"
+                    android:text="📄 Detail Pengajuan"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#1C1C1E"
@@ -383,7 +388,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="History"
+                    android:text="🕐 History"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#1C1C1E"
@@ -568,7 +573,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Pesan Untuk Anak"
+                    android:text="📝 Pesan Untuk Anak"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#1C1C1E"
@@ -684,7 +689,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Keputusan Anda"
+                    android:text="🫵 Keputusan Anda"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#1C1C1E"
@@ -718,7 +723,7 @@
                             android:layout_height="wrap_content"
                             android:text="Setuju"
                             android:textStyle="bold"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#90EE90"
                             android:textSize="16sp"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
