@@ -253,7 +253,7 @@
                                     android:layout_height="8dp"
                                     android:max="100"
                                     android:progress="75"
-                                    android:progressDrawable="@drawable/progress_bar_secondary_gradient"/>
+                                    />
 
                                 <RelativeLayout
                                     android:layout_width="match_parent"
@@ -375,7 +375,7 @@
                                     android:layout_height="8dp"
                                     android:max="100"
                                     android:progress="45"
-                                    android:progressDrawable="@drawable/progress_bar_primary_gradient"/>
+                                    />
 
                                 <RelativeLayout
                                     android:layout_width="match_parent"

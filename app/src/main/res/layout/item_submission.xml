@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/white">
+
+        <!-- Ikon Tipe Pengajuan -->
+        <ImageView
+            android:id="@+id/imgSubmissionType"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/finance"
+            android:contentDescription="Ikon Tipe Pengajuan"
+            android:padding="8dp"
+            android:background="@drawable/bg_tag_green"
+            android:layout_marginEnd="16dp"
+             />
+
+        <!-- Detail Pengajuan -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Judul Pengajuan (Contoh: Beli Mainan Baru / Permintaan Uang Jajan) -->
+            <TextView
+                android:id="@+id/tvSubmissionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pengajuan Pembelian Sepatu Baru"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#004D40"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <!-- Detail Pengaju (Nama Anak) -->
+            <TextView
+                android:id="@+id/tvChildName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dari: Muhammad Zaki"
+                android:textSize="14sp"
+                android:textColor="#00838F"
+                android:layout_marginTop="2dp"/>
+
+            <!-- Status atau Waktu Pengajuan -->
+            <TextView
+                android:id="@+id/tvSubmissionTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 jam yang lalu"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <!-- Jumlah dan Indikator Status -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <!-- Nilai Pengajuan -->
+            <TextView
+                android:id="@+id/tvSubmissionAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rp 350.000"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#D84315"/> <!-- Warna untuk jumlah yang perlu disetujui -->
+
+            <!-- Label Persetujuan -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PERLU TINDAKAN"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#FDD835"
+                android:background="@drawable/bg_status_pending"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
