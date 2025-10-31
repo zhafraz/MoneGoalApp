@@ -13,19 +13,10 @@
         android:theme="@style/Theme.MoneGoal"
         tools:targetApi="31">
         <activity
-            android:name=".DetailAjuanActivity"
+            android:name=".HomeOrtuActivity"
             android:exported="false" />
         <activity
-            android:name=".AjukanDanaActivity"
-            android:exported="false" />
-        <activity
-            android:name=".PengajuanActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AIBantuanActivity"
+            android:name=".LoginOrtuActivity"
             android:exported="false" />
         <activity
             android:name=".RegisterActivity"

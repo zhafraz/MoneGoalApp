@@ -1,59 +1,123 @@
-package com.example.monegoal
+package com.example.monegoal.ui.anak
 
+import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.*
+import androidx.cardview.widget.CardView
+import androidx.fragment.app.Fragment
+import com.example.monegoal.R
+import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AjukanDanaFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AjukanDanaFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var inputNominal: EditText
+    private lateinit var inputAlasan: EditText
+    private lateinit var btnAjukan: LinearLayout
+
+    private lateinit var db: FirebaseFirestore
+
+    private var selectedPriority: String? = null
+    private var selectedAmount: Int? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_ajukan_dana, container, false)
+        val view = inflater.inflate(R.layout.fragment_ajukan_dana, container, false)
+
+        db = FirebaseFirestore.getInstance()
+
+        inputNominal = view.findViewById(R.id.inputcustomnominal)
+        inputAlasan = view.findViewById(R.id.inputAlasan)
+        btnAjukan = view.findViewById(R.id.btnAjukan)
+
+        setupNominalShortcuts(view)
+        setupPrioritySelection(view)
+        setupSubmitButton()
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AjukanDanaFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AjukanDanaFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun setupNominalShortcuts(view: View) {
+        val nominalValues = listOf(10000, 20000, 30000, 50000, 75000, 100000)
+        val cardIds = listOf(
+            R.id.card10000, R.id.card20000, R.id.card30000,
+            R.id.card50000, R.id.card75000, R.id.card100000
+        )
+
+        for ((index, cardId) in cardIds.withIndex()) {
+            val card = view.findViewById<CardView>(cardId)
+            val amount = nominalValues[index]
+            card.setOnClickListener {
+                inputNominal.setText(amount.toString())
+                selectedAmount = amount
+                resetCardColors(cardIds, view)
+                card.setCardBackgroundColor(Color.parseColor("#BBDEFB"))
             }
+        }
+    }
+
+    private fun resetCardColors(cardIds: List<Int>, view: View) {
+        for (id in cardIds) {
+            val card = view.findViewById<CardView>(id)
+            card.setCardBackgroundColor(Color.parseColor("#F0F9FF"))
+        }
+    }
+
+    private fun setupPrioritySelection(view: View) {
+        val priorityCards = mapOf(
+            "Penting" to view.findViewById<CardView>(R.id.cardPenting),
+            "Biasa" to view.findViewById<CardView>(R.id.cardBiasa),
+            "Nanti" to view.findViewById<CardView>(R.id.cardNanti)
+        )
+
+        for ((priority, card) in priorityCards) {
+            card.setOnClickListener {
+                selectedPriority = priority
+                resetPriorityColors(priorityCards)
+                card.setCardBackgroundColor(Color.parseColor("#C8E6C9"))
+            }
+        }
+    }
+
+    private fun resetPriorityColors(priorityCards: Map<String, CardView>) {
+        for ((_, card) in priorityCards) {
+            card.setCardBackgroundColor(Color.WHITE)
+        }
+    }
+
+    private fun setupSubmitButton() {
+        btnAjukan.setOnClickListener {
+            val nominalText = inputNominal.text.toString()
+            val alasanText = inputAlasan.text.toString()
+
+            if (nominalText.isEmpty() || alasanText.isEmpty() || selectedPriority == null) {
+                Toast.makeText(requireContext(), "Lengkapi semua data dulu ya!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val pengajuan = hashMapOf(
+                "nominal" to nominalText.toInt(),
+                "alasan" to alasanText,
+                "prioritas" to selectedPriority,
+                "status" to "Menunggu Persetujuan",
+                "tanggal" to System.currentTimeMillis(),
+                "anak" to "Nama Anak Contoh" // nanti bisa ambil dari session / auth
+            )
+
+            db.collection("pengajuan_dana")
+                .add(pengajuan)
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Pengajuan berhasil dikirim!", Toast.LENGTH_SHORT).show()
+                    inputNominal.setText("")
+                    inputAlasan.setText("")
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Gagal mengirim pengajuan 😢", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 }

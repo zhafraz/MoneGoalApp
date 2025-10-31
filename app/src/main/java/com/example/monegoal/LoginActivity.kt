@@ -15,6 +15,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etPassword: EditText
     private lateinit var btnLogin: androidx.appcompat.widget.AppCompatButton
     private lateinit var tvRegister: TextView
+    private lateinit var tvOrtu: TextView
     private lateinit var cbRemember: CheckBox
 
     private lateinit var auth: FirebaseAuth
@@ -35,6 +36,7 @@ class LoginActivity : AppCompatActivity() {
         etPassword = findViewById(R.id.etPassword)
         btnLogin = findViewById(R.id.btnLogin)
         tvRegister = findViewById(R.id.tvRegister)
+        tvOrtu = findViewById(R.id.tvOrtu)
         cbRemember = findViewById(R.id.cbRemember)
 
         // edge-to-edge padding (optional)
@@ -42,6 +44,13 @@ class LoginActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        val inviteCode = intent.getStringExtra("inviteCode")
+        val emailOrtu = intent.getStringExtra("emailOrtu")
+
+        if (!inviteCode.isNullOrEmpty()) {
+            showInviteCodeDialog(inviteCode, emailOrtu)
         }
 
         // progress dialog
@@ -61,6 +70,10 @@ class LoginActivity : AppCompatActivity() {
         // Open RegisterActivity when user taps "Daftar Sekarang"
         tvRegister.setOnClickListener {
             startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
+        }
+
+        tvOrtu.setOnClickListener {
+            startActivity(Intent(this@LoginActivity, LoginOrtuActivity::class.java))
         }
 
         // Login action
@@ -108,5 +121,28 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
         }
+    }
+    private fun showInviteCodeDialog(inviteCode: String, parentEmail: String? = null) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Kode Undangan Orang Tua")
+        builder.setMessage(
+            "Bagikan kode ini ke orang tua agar dapat terhubung:\n\n$inviteCode\n\n" +
+                    (parentEmail?.let { "Email ortu: $it\n\n" } ?: "")
+        )
+        builder.setPositiveButton("OK") { d, _ -> d.dismiss() }
+        builder.setNeutralButton("Salin") { _, _ ->
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clip = android.content.ClipData.newPlainText("invite_code", inviteCode)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(this, "Kode disalin ke clipboard", Toast.LENGTH_SHORT).show()
+        }
+        builder.setNegativeButton("Bagikan") { _, _ ->
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Kode Undangan MoneGoal")
+            intent.putExtra(Intent.EXTRA_TEXT, "Kode undangan: $inviteCode\nEmail ortu: $parentEmail")
+            startActivity(Intent.createChooser(intent, "Bagikan kode lewat"))
+        }
+        builder.show()
     }
 }

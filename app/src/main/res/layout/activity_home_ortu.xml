@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -5,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#E0F7FA"
+    android:id="@+id/main"
     android:fillViewport="true">
 
     <LinearLayout
@@ -45,7 +47,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
-            <!-- User/Balance Card -->
+            <!-- User/Balance Card (Parent View) -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardUserBalance"
                 android:layout_width="match_parent"
@@ -62,7 +64,7 @@
                     android:background="@drawable/bg_card_balance_gradient"
                     android:padding="20dp">
 
-                    <!-- Info User -->
+                    <!-- Info User (Parent) -->
                     <LinearLayout
                         android:id="@+id/profile"
                         android:layout_width="match_parent"
@@ -79,7 +81,7 @@
                             android:background="@drawable/bg_circle_yellow"
                             android:padding="8dp"
                             android:scaleType="fitCenter"
-                            android:contentDescription="Foto Profil"
+                            android:contentDescription="Foto Profil Orang Tua"
                             android:layout_marginEnd="12dp"/>
 
                         <LinearLayout
@@ -91,21 +93,22 @@
                                 android:id="@+id/tvUserName"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Nama"
+                                android:text="Nama Orang Tua"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:textColor="#FFFFFF"/>
+                            <!-- MODIFIKASI: Menunjukkan Peran Ortu dan Jumlah Anak -->
                             <TextView
-                                android:id="@+id/tvUserClass"
+                                android:id="@+id/tvUserRole"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Sekolah"
+                                android:text="Pengelola Keluarga (2 Anak)"
                                 android:textSize="14sp"
                                 android:textColor="#B2DFDB"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Saldo & Poin -->
+                    <!-- Saldo & Pengajuan Tertunda -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
@@ -113,7 +116,7 @@
                         android:layout_marginBottom="12dp"/>
 
                     <LinearLayout
-                        android:id="@+id/finance"
+                        android:id="@+id/finance_summary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -128,12 +131,12 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="SALDO KAS"
+                                android:text="TOTAL DANA ANAK"
                                 android:textStyle="bold"
                                 android:textSize="12sp"
                                 android:textColor="#B2DFDB"/>
                             <TextView
-                                android:id="@+id/tvCurrentBalance"
+                                android:id="@+id/tvTotalChildBalance"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Rp 0"
@@ -152,11 +155,11 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textStyle="bold"
-                                android:text="POIN REWARD"
+                                android:text="PENGAJUAN TERTUNDA"
                                 android:textSize="12sp"
                                 android:textColor="#B2DFDB"/>
                             <TextView
-                                android:id="@+id/tvCurrentPoints"
+                                android:id="@+id/tvPendingSubmissions"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
@@ -169,11 +172,11 @@
             </androidx.cardview.widget.CardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Quick Actions Grid -->
+        <!-- Quick Actions Grid (Parent Focus) -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="✈️ Aksi Cepat"
+            android:text="🛠️ Manajemen Keluarga"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#004D40"
@@ -190,9 +193,9 @@
             android:columnOrderPreserved="false"
             android:paddingHorizontal="16dp">
 
-            <!-- Action: Tambah Saldo -->
+            <!-- Action: Atur Anak & Akun -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/cardAddMoney"
+                android:id="@+id/cardManageChildren"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
@@ -214,16 +217,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tambah Saldo"
+                        android:text="Riwayat Transaksi"
                         android:textStyle="bold"
                         android:textColor="#004D40"
                         android:textSize="14sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Action: Tambah Tujuan (Goal) -->
+            <!-- Action: Set Goal/Tugas Baru -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/cardAddPrestasi"
+                android:id="@+id/cardSetTask"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
@@ -240,86 +243,26 @@
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:src="@drawable/winning"
+                        android:src="@drawable/riwayat"
                         android:layout_marginBottom="8dp"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Program Prestasi"
+                        android:text="Detail Pengajuan"
                         android:textStyle="bold"
                         android:textColor="#004D40"
                         android:textSize="14sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Action: Lihat Riwayat -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardChat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/robot"
-                        android:layout_marginBottom="8dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Smart Advisor"
-                        android:textStyle="bold"
-                        android:textColor="#004D40"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
-            <!-- Action: Tukar Poin -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardNews"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/newspaper"
-                        android:layout_marginBottom="8dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Berita"
-                        android:textStyle="bold"
-                        android:textColor="#004D40"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
         </GridLayout>
 
-        <!-- Daftar Tujuan (Goal List) -->
+        <!-- Daftar Pengajuan Anak (Core Feature) -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🌟 Program Terpopuler"
+            android:text="📝 Pengajuan Anak Menunggu Persetujuan"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#004D40"
@@ -327,16 +270,32 @@
             android:layout_marginBottom="12dp"
             android:paddingHorizontal="24dp"/>
 
-        <!-- RecyclerView untuk daftar tujuan -->
+        <!-- RecyclerView untuk daftar pengajuan (misal: permintaan uang jajan, permintaan pembelian barang, dsb.) -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewGoals"
+            android:id="@+id/recyclerViewSubmissions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false"
             android:paddingHorizontal="16dp"
-            tools:itemCount="2"
+            tools:itemCount="3"
             tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_goal" />
+            tools:listitem="@layout/item_submission" /> <!-- Harus menggunakan layout item yang baru untuk pengajuan -->
+
+        <!-- Contoh placeholder untuk Pengajuan jika tidak ada yang pending -->
+        <TextView
+            android:id="@+id/tvNoSubmissions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎉 Semua pengajuan anak sudah beres! Tidak ada yang perlu disetujui."
+            android:textColor="#004D40"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:gravity="center"
+            android:background="@drawable/bg_tag_green"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="16dp"
+            android:visibility="visible"
+            tools:visibility="gone"/>
 
     </LinearLayout>
 </ScrollView>

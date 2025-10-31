@@ -1,6 +1,5 @@
 package com.example.monegoal
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +8,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import com.example.monegoal.ui.anak.AjukanDanaFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -25,6 +25,10 @@ class HomeFragment : Fragment() {
     private lateinit var cardNews: CardView
     private lateinit var recyclerViewGoals: RecyclerView
 
+    // new: containers that should be clickable
+    private lateinit var profileContainer: View
+    private lateinit var financeContainer: View
+
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
 
@@ -38,69 +42,81 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // init Firebase
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        // Find views inside fragment_home.xml
+        // text views
         tvUserName = view.findViewById(R.id.tvUserName)
         tvUserClass = view.findViewById(R.id.tvUserClass)
         tvCurrentBalance = view.findViewById(R.id.tvCurrentBalance)
         tvCurrentPoints = view.findViewById(R.id.tvCurrentPoints)
 
+        // cards
         cardChat = view.findViewById(R.id.cardChat)
         cardAddMoney = view.findViewById(R.id.cardAddMoney)
         cardAddPrestasi = view.findViewById(R.id.cardAddPrestasi)
         cardNews = view.findViewById(R.id.cardNews)
         recyclerViewGoals = view.findViewById(R.id.recyclerViewGoals)
 
-        // Setup click listeners for cards
+        // new: find clickable containers
+        profileContainer = view.findViewById(R.id.profile)
+        financeContainer = view.findViewById(R.id.finance)
+
+        // card listeners (existing)
         cardChat.setOnClickListener {
-            startActivity(Intent(requireContext(), AIBantuanActivity::class.java))
+            (activity as? MainActivity)?.navigateTo(AiBantuanFragment(), R.id.nav_ai_bantuan, addToBackStack = true)
+                ?: navigateToFragment(AiBantuanFragment())
         }
         cardAddMoney.setOnClickListener {
-            startActivity(Intent(requireContext(), AjukanDanaActivity::class.java))
+            (activity as? MainActivity)?.navigateTo(AjukanDanaFragment(), null, addToBackStack = true)
+                ?: navigateToFragment(AjukanDanaFragment())
         }
         cardAddPrestasi.setOnClickListener {
-            startActivity(Intent(requireContext(), HomeFragment::class.java))
+            (activity as? MainActivity)?.navigateTo(ProgramFragment(), R.id.nav_program, addToBackStack = true)
+                ?: navigateToFragment(ProgramFragment())
         }
         cardNews.setOnClickListener {
-            startActivity(Intent(requireContext(), HomeFragment::class.java))
+            (activity as? MainActivity)?.navigateTo(CampaignFragment(), R.id.nav_campaign, addToBackStack = true)
+                ?: navigateToFragment(CampaignFragment())
+        }
+
+        // new: profile & finance click handlers
+        profileContainer.setOnClickListener {
+            (activity as? MainActivity)?.navigateTo(ProfileFragment(), R.id.nav_profile, addToBackStack = true)
+                ?: navigateToFragment(ProfileFragment())
+        }
+
+        financeContainer.setOnClickListener {
+            // FinanceFra
+            (activity as? MainActivity)?.navigateTo(PengajuanFragment(), null, addToBackStack = true)
+                ?: navigateToFragment(PengajuanFragment())
         }
 
         loadUserData()
     }
 
+    private fun navigateToFragment(fragment: Fragment) {
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
     private fun loadUserData() {
-        val user = auth.currentUser ?: run {
-            // user belum login — tampilkan default atau arahkan ke login
-            tvUserName.text = "Halo!"
-            tvUserClass.text = ""
-            tvCurrentBalance.text = "Rp 0"
-            tvCurrentPoints.text = "0"
-            return
-        }
+        val user = auth.currentUser ?: return
 
         val uid = user.uid
         firestore.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
-                    val name = document.getString("name") ?: "Nama"
-                    val school = document.getString("school") ?: ""
+                    tvUserName.text = document.getString("name") ?: ""
+                    tvUserClass.text = document.getString("school") ?: ""
                     val balance = document.getLong("balance") ?: 0
                     val points = document.getLong("points") ?: 0
 
-                    tvUserName.text = name
-                    tvUserClass.text = school
                     tvCurrentBalance.text = "Rp %,d".format(balance)
                     tvCurrentPoints.text = points.toString()
                 }
-            }
-            .addOnFailureListener {
-                // fallback ringan
-                tvUserName.text = "Halo!"
-                tvCurrentBalance.text = "Rp 0"
-                tvCurrentPoints.text = "0"
             }
     }
 }

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#E0F7FA"
-    tools:context=".DetailAjuanAnakFragment">
+    tools:context=".DetailAjuanAnakActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -90,6 +90,7 @@
                     android:layout_marginEnd="4dp">
 
                     <TextView
+                        android:id="@+id/tvCountNew"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="3"
@@ -118,6 +119,7 @@
                     android:layout_marginHorizontal="4dp">
 
                     <TextView
+                        android:id="@+id/tvCountApproved"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="15"
@@ -146,6 +148,7 @@
                     android:layout_marginHorizontal="4dp">
 
                     <TextView
+                        android:id="@+id/tvCountRejected"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="2"
@@ -174,6 +177,7 @@
                     android:layout_marginStart="4dp">
 
                     <TextView
+                        android:id="@+id/tvCountPending"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1"
@@ -254,6 +258,7 @@
                                 android:layout_marginStart="12dp">
 
                                 <TextView
+                                    android:id="@+id/tvChildName"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Kevin"
@@ -262,6 +267,7 @@
                                     android:textColor="#1C1C1E"/>
 
                                 <TextView
+                                    android:id="@+id/tvChildInfo"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="12 tahun • Diajukan 25 Nov 2024"
@@ -316,6 +322,7 @@
                                     android:textColor="#8E8E93"/>
 
                                 <TextView
+                                    android:id="@+id/tvNominal"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Rp 75.000"
@@ -339,6 +346,7 @@
                                     android:textColor="#8E8E93"/>
 
                                 <TextView
+                                    android:id="@+id/tvCategory"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Pendidikan"
@@ -367,6 +375,7 @@
                             app:cardBackgroundColor="#F8F9FA">
 
                             <TextView
+                                android:id="@+id/tvReason"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="Untuk membeli buku ensiklopedia sains dan alat gambar karena ada tugas sekolah tentang tata surya dan saya ingin membuat poster yang bagus"
@@ -433,6 +442,7 @@
                                     android:textColor="#8E8E93"/>
 
                                 <TextView
+                                    android:id="@+id/tvBalanceChild"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Rp 120.000"
@@ -457,6 +467,7 @@
                                     android:textColor="#8E8E93"/>
 
                                 <TextView
+                                    android:id="@+id/tvSpentThisMonth"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Rp 45.000"

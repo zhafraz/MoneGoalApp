@@ -1,8 +1,8 @@
 package com.example.monegoal
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
 
         bottomNav = findViewById(R.id.bottom_navigation)
 
-        // tampilkan HomeFragment sebagai default
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, HomeFragment())
@@ -24,31 +23,39 @@ class MainActivity : AppCompatActivity() {
         }
 
         bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_beranda -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, HomeFragment())
-                        .commit()
-                    true
-                }
-//                R.id.nav_campaign -> {
-//                    startActivity(Intent(this, CampaignActivity::class.java))
-//                    true
-//                }
-//                R.id.nav_program -> {
-//                    startActivity(Intent(this, ProgramActivity::class.java))
-//                    true
-//                }
-                R.id.nav_ai_bantuan -> {
-                    startActivity(Intent(this, AIBantuanActivity::class.java))
-                    true
-                }
-                R.id.nav_profile -> {
-                    startActivity(Intent(this, ProfileActivity::class.java))
-                    true
-                }
-                else -> false
+            val fragment = when (item.itemId) {
+                R.id.nav_beranda -> HomeFragment()
+                R.id.nav_campaign -> CampaignFragment()
+                R.id.nav_program -> ProgramFragment()
+                R.id.nav_ai_bantuan -> AiBantuanFragment()
+                R.id.nav_profile -> ProfileFragment()
+                else -> null
             }
+
+            fragment?.let {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, it)
+                    .commit()
+                true
+            } ?: false
         }
+    }
+    fun navigateTo(
+        fragment: Fragment,
+        menuItemId: Int? = null,
+        addToBackStack: Boolean = true
+    ) {
+        if (menuItemId != null) {
+            bottomNav.selectedItemId = menuItemId
+        }
+
+        val transaction = supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+
+        if (addToBackStack) {
+            transaction.addToBackStack(null)
+        }
+
+        transaction.commit()
     }
 }
