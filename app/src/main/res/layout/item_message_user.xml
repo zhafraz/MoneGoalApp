@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingBottom="8dp"
+    android:gravity="top|end"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
+
+    <!-- Bubble pesan (diletakkan sebelum avatar agar bubble muncul di kiri avatar) -->
+    <TextView
+        android:id="@+id/tvUserMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_user_bubble"
+        android:paddingStart="16dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="10dp"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:includeFontPadding="false"
+        android:maxWidth="240dp"
+        android:layout_marginEnd="8dp"
+        android:text="Saya tertarik dengan program sains. Apa rekomendasi untuk siswa kelas 11?" />
+
+    <!-- Ikon User -->
+    <TextView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/user"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginStart="8dp"/>
+</LinearLayout>
