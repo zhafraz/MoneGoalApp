@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class MessagesAdapter(
+class MessageAdapter(
     private val items: MutableList<Message>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 

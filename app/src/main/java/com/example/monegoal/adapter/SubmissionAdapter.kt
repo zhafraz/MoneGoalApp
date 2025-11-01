@@ -3,13 +3,11 @@ package com.example.monegoal.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monegoal.R
-import com.example.monegoal.model.Submission
-import java.text.NumberFormat
+import com.example.monegoal.models.Submission
 import java.text.SimpleDateFormat
 import java.util.*
 

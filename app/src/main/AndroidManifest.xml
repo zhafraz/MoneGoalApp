@@ -13,6 +13,9 @@
         android:theme="@style/Theme.MoneGoal"
         tools:targetApi="31">
         <activity
+            android:name=".TopupActivity"
+            android:exported="false" />
+        <activity
             android:name=".HomeOrtuActivity"
             android:exported="false" />
         <activity

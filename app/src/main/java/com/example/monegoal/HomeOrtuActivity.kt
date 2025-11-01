@@ -12,9 +12,8 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monegoal.adapter.SubmissionAdapter
-import com.example.monegoal.model.Submission
+import com.example.monegoal.models.Submission
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.DocumentSnapshot
@@ -35,6 +34,7 @@ class HomeOrtuActivity : AppCompatActivity() {
 
     private lateinit var cardManageChildren: CardView
     private lateinit var cardDetailPengajuan: CardView
+    private lateinit var cardTopup: CardView
 
     private lateinit var adapter: SubmissionAdapter
     private val submissionList = mutableListOf<Submission>()
@@ -63,6 +63,7 @@ class HomeOrtuActivity : AppCompatActivity() {
         tvNoSubmissions = findViewById(R.id.tvNoSubmissions)
         cardManageChildren = findViewById(R.id.cardManageChildren)
         cardDetailPengajuan = findViewById(R.id.cardSetTask)
+        cardTopup = findViewById(R.id.cardTopup)
 
         // Setup RecyclerView
         adapter = SubmissionAdapter(submissionList) { submission ->
@@ -207,6 +208,10 @@ class HomeOrtuActivity : AppCompatActivity() {
 
         cardDetailPengajuan.setOnClickListener {
             startActivity(Intent(this, DetailAjuanAnakActivity::class.java))
+        }
+
+        cardTopup.setOnClickListener {
+            startActivity(Intent(this, TopupActivity::class.java))
         }
     }
 

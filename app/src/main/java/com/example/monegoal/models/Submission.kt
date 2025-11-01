@@ -1,4 +1,4 @@
-package com.example.monegoal.model
+package com.example.monegoal.models
 
 data class Submission(
     val id: String = "",

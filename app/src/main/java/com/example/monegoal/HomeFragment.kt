@@ -68,8 +68,8 @@ class HomeFragment : Fragment() {
                 ?: navigateToFragment(AiBantuanFragment())
         }
         cardAddMoney.setOnClickListener {
-            (activity as? MainActivity)?.navigateTo(AjukanDanaFragment(), null, addToBackStack = true)
-                ?: navigateToFragment(AjukanDanaFragment())
+            (activity as? MainActivity)?.navigateTo(TopupFragment(), null, addToBackStack = true)
+                ?: navigateToFragment(TopupFragment())
         }
         cardAddPrestasi.setOnClickListener {
             (activity as? MainActivity)?.navigateTo(ProgramFragment(), R.id.nav_program, addToBackStack = true)
