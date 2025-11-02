@@ -40,10 +40,10 @@
         android:id="@+id/btnClosePopup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tutup"
-        android:textColor="#FFFFFF"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:padding="12dp"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp" />
+        android:text="Tutup"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold" />
 </LinearLayout>

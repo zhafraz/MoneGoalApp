@@ -39,7 +39,7 @@
                 android:id="@+id/btnNotification"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/notif"
+                android:src="@drawable/logout"
                 android:contentDescription="Notifikasi"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
@@ -184,52 +184,13 @@
             android:layout_marginBottom="12dp"
             android:paddingHorizontal="24dp"/>
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:overScrollMode="never"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <!-- Riwayat Transaksi -->
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/cardManageChildren"
-                    android:layout_width="160dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="12dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="5dp"
-                    app:cardBackgroundColor="#FFFFFF">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:src="@drawable/wallet"
-                            android:layout_marginBottom="8dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Riwayat Transaksi"
-                            android:textStyle="bold"
-                            android:textColor="#004D40"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                android:gravity="center"
+                >
 
                 <!-- Detail Pengajuan -->
                 <androidx.cardview.widget.CardView
@@ -251,7 +212,7 @@
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:src="@drawable/riwayat"
+                            android:src="@drawable/review"
                             android:layout_marginBottom="8dp"/>
 
                         <TextView
@@ -283,7 +244,7 @@
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:src="@drawable/outline_money"
+                            android:src="@drawable/wallet"
                             android:layout_marginBottom="8dp"/>
 
                         <TextView
@@ -297,7 +258,6 @@
                 </androidx.cardview.widget.CardView>
 
             </LinearLayout>
-        </HorizontalScrollView>
 
         <!-- Daftar Pengajuan Anak (Core Feature) -->
         <TextView

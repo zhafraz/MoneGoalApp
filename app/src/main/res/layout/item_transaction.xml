@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="2dp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Ikon Transaksi (Masuk/Keluar) -->
+        <ImageView
+            android:id="@+id/imgTransactionIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/inmoney"
+            android:contentDescription="Ikon Transaksi"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:background="@drawable/bg_circle_green_light"
+            android:layout_marginEnd="16dp"
+            tools:src="@drawable/outmoney"
+            tools:background="@drawable/bg_circle_red_light"/>
+
+        <!-- Detail Transaksi (Keterangan & Tanggal/Waktu) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Keterangan Transaksi -->
+            <TextView
+                android:id="@+id/tvTransactionDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Persetujuan: Beli Buku Sains"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#1C1C1E"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <!-- Tanggal dan Waktu -->
+            <TextView
+                android:id="@+id/tvTransactionDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="25 November 2024, 10:30 WIB"
+                android:textSize="12sp"
+                android:textColor="#8E8E93"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Jumlah Transaksi -->
+        <TextView
+            android:id="@+id/tvTransactionAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+ Rp 75.000"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"
+            android:layout_marginStart="16dp"
+            tools:text="- Rp 15.000"
+            tools:textColor="#F44336"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

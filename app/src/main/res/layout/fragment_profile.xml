@@ -45,20 +45,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageButton
-                    android:id="@+id/btn_settings"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?android:attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/logout"
-                    android:contentDescription="Pengaturan"
-                    android:layout_marginEnd="16dp"
-                    android:padding="8dp"
-                    android:scaleType="fitCenter"
-                    android:elevation="2dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/tv_profile_title"
-                    app:layout_constraintBottom_toBottomOf="@id/tv_profile_title" />
+
 
                 <!-- FOTO PROFIL -->
                 <androidx.cardview.widget.CardView
@@ -233,7 +220,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Goals Aktif"
+                            android:text="Goals Selsai"
                             android:textColor="#666666"
                             android:textSize="12sp"
                             android:layout_marginTop="4dp"/>
@@ -305,107 +292,57 @@
                         android:layout_marginBottom="8dp"/>
 
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/menu_keamanan"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp"
-                        android:layout_marginBottom="4dp">
 
-                        <View
-                            android:id="@+id/icon_bg_2"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_tag_green"
-                            android:layout_marginStart="8dp"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"/>
+<!--                    <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                        android:id="@+id/menu_riwayat_transaksi"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:clickable="true"-->
+<!--                        android:focusable="true"-->
+<!--                        android:foreground="?android:attr/selectableItemBackground"-->
+<!--                        android:paddingTop="12dp"-->
+<!--                        android:paddingBottom="12dp"-->
+<!--                        android:layout_marginBottom="4dp">-->
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/padlock"
-                            app:layout_constraintTop_toTopOf="@id/icon_bg_2"
-                            app:layout_constraintBottom_toBottomOf="@id/icon_bg_2"
-                            app:layout_constraintStart_toStartOf="@id/icon_bg_2"
-                            app:layout_constraintEnd_toEndOf="@id/icon_bg_2"/>
+<!--                        <View-->
+<!--                            android:id="@+id/icon_bg_3"-->
+<!--                            android:layout_width="40dp"-->
+<!--                            android:layout_height="40dp"-->
+<!--                            android:background="@drawable/bg_tag_green"-->
+<!--                            android:layout_marginStart="8dp"-->
+<!--                            app:layout_constraintStart_toStartOf="parent"-->
+<!--                            app:layout_constraintTop_toTopOf="parent"-->
+<!--                            app:layout_constraintBottom_toBottomOf="parent"/>-->
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:text="Keamanan"
-                            android:textColor="#333333"
-                            android:textSize="16sp"
-                            app:layout_constraintStart_toEndOf="@id/icon_bg_2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent" />
+<!--                        <ImageView-->
+<!--                            android:layout_width="24dp"-->
+<!--                            android:layout_height="24dp"-->
+<!--                            android:src="@drawable/riwayat"-->
+<!--                            app:layout_constraintTop_toTopOf="@id/icon_bg_3"-->
+<!--                            app:layout_constraintBottom_toBottomOf="@id/icon_bg_3"-->
+<!--                            app:layout_constraintStart_toStartOf="@id/icon_bg_3"-->
+<!--                            app:layout_constraintEnd_toEndOf="@id/icon_bg_3"/>-->
 
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:tint="#AAAAAA"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
+<!--                        <TextView-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginStart="16dp"-->
+<!--                            android:text="Riwayat Transaksi"-->
+<!--                            android:textColor="#333333"-->
+<!--                            android:textSize="16sp"-->
+<!--                            app:layout_constraintStart_toEndOf="@id/icon_bg_3"-->
+<!--                            app:layout_constraintTop_toTopOf="parent"-->
+<!--                            app:layout_constraintBottom_toBottomOf="parent" />-->
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/menu_riwayat_transaksi"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp"
-                        android:layout_marginBottom="4dp">
-
-                        <View
-                            android:id="@+id/icon_bg_3"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_tag_green"
-                            android:layout_marginStart="8dp"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"/>
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/riwayat"
-                            app:layout_constraintTop_toTopOf="@id/icon_bg_3"
-                            app:layout_constraintBottom_toBottomOf="@id/icon_bg_3"
-                            app:layout_constraintStart_toStartOf="@id/icon_bg_3"
-                            app:layout_constraintEnd_toEndOf="@id/icon_bg_3"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:text="Riwayat Transaksi"
-                            android:textColor="#333333"
-                            android:textSize="16sp"
-                            app:layout_constraintStart_toEndOf="@id/icon_bg_3"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent" />
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:tint="#AAAAAA"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
+<!--                        <ImageView-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            app:tint="#AAAAAA"-->
+<!--                            android:layout_marginEnd="8dp"-->
+<!--                            app:layout_constraintEnd_toEndOf="parent"-->
+<!--                            app:layout_constraintTop_toTopOf="parent"-->
+<!--                            app:layout_constraintBottom_toBottomOf="parent" />-->
+<!--                    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/menu_bantuan"
@@ -443,8 +380,53 @@
                             android:layout_marginStart="16dp"
                             android:text="Bantuan &amp; Dukungan"
                             android:textColor="#333333"
+                            android:textStyle="bold"
                             android:textSize="16sp"
                             app:layout_constraintStart_toEndOf="@id/icon_bg_4"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/logOut"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
+                        android:layout_marginBottom="4dp">
+
+                        <View
+                            android:id="@+id/icon_bg_5"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="#FFEBEE"
+                            android:layout_marginStart="8dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"/>
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/logout"
+                            app:layout_constraintTop_toTopOf="@id/icon_bg_5"
+                            app:layout_constraintBottom_toBottomOf="@id/icon_bg_5"
+                            app:layout_constraintStart_toStartOf="@id/icon_bg_5"
+                            app:layout_constraintEnd_toEndOf="@id/icon_bg_5"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Keluar"
+                            android:textColor="#333333"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toEndOf="@id/icon_bg_5"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -453,21 +435,21 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <Button
-                android:id="@+id/btn_logout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="20dp"
-                android:layout_marginTop="32dp"
-                android:backgroundTint="#C51F1A"
-                android:elevation="2dp"
-                android:minHeight="56dp"
-                android:text="Keluar"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/menu_card"
-                tools:layout_editor_absoluteX="16dp" />
+<!--            <Button-->
+<!--                android:id="@+id/btn_logout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_margin="20dp"-->
+<!--                android:layout_marginTop="32dp"-->
+<!--                android:backgroundTint="#C51F1A"-->
+<!--                android:elevation="2dp"-->
+<!--                android:minHeight="56dp"-->
+<!--                android:text="Keluar"-->
+<!--                android:textColor="@android:color/white"-->
+<!--                android:textSize="16sp"-->
+<!--                android:textStyle="bold"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/menu_card"-->
+<!--                tools:layout_editor_absoluteX="16dp" />-->
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

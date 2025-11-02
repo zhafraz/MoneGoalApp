@@ -263,6 +263,7 @@
                             android:background="@drawable/send"
                             android:contentDescription="Kirim Pesan"
                             android:padding="8dp"
+                            android:backgroundTint="#4DB6AC"
                             android:scaleType="fitCenter" />
                     </LinearLayout>
                 </LinearLayout>
