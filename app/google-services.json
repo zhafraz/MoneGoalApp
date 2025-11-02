@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "67805038781",
+    "firebase_url": "https://monegoal-9f232-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "monegoal-9f232",
+    "storage_bucket": "monegoal-9f232.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:67805038781:android:8594bbc85a21775be1cfd4",
+        "android_client_info": {
+          "package_name": "com.example.monegoal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYIpQnG2b8ZmAUheRC9e1Q7_Eggbf5eow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
