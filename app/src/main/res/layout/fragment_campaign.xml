@@ -40,7 +40,7 @@
                             android:id="@+id/textViewTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Campaign"
+                            android:text="Berita"
                             android:textSize="28sp"
                             android:textStyle="bold"
                             android:textColor="#004D40"
@@ -58,7 +58,7 @@
                         <EditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Cari campaign..."
+                            android:hint="Cari berita..."
                             android:textColorHint="#999999"
                             android:textColor="#333333"
                             android:paddingStart="48dp"
@@ -99,11 +99,11 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:text="Semua"
-                                android:textColor="@android:color/white"
+                                android:textColor="@android:color/black"
                                 android:textSize="14sp"
                                 android:paddingStart="16dp"
                                 android:paddingEnd="16dp"
-                                android:background="@drawable/bg_tag_green"
+                                android:backgroundTint="#FFF8E1"
                                 android:textAllCaps="false"
                                 android:layout_marginEnd="8dp" />
 
@@ -115,7 +115,7 @@
                                 android:textSize="14sp"
                                 android:paddingStart="16dp"
                                 android:paddingEnd="16dp"
-                                android:background="@drawable/bg_tag_yellow"
+                                android:backgroundTint="#FFF8E1"
                                 android:textAllCaps="false"
                                 android:layout_marginEnd="8dp" />
 
@@ -127,31 +127,19 @@
                                 android:textSize="14sp"
                                 android:paddingStart="16dp"
                                 android:paddingEnd="16dp"
-                                android:background="@drawable/bg_tag_yellow"
+                                android:backgroundTint="#FFF8E1"
                                 android:textAllCaps="false"
                                 android:layout_marginEnd="8dp" />
 
                             <Button
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
-                                android:text="🔬 Sains"
+                                android:text="📊 Finance"
                                 android:textColor="#666666"
                                 android:textSize="14sp"
                                 android:paddingStart="16dp"
                                 android:paddingEnd="16dp"
-                                android:background="@drawable/bg_tag_yellow"
-                                android:textAllCaps="false"
-                                android:layout_marginEnd="8dp" />
-
-                            <Button
-                                android:layout_width="wrap_content"
-                                android:layout_height="40dp"
-                                android:text="🎨 Seni"
-                                android:textColor="#666666"
-                                android:textSize="14sp"
-                                android:paddingStart="16dp"
-                                android:paddingEnd="16dp"
-                                android:background="@drawable/bg_tag_yellow"
+                                android:backgroundTint="#FFF8E1"
                                 android:textAllCaps="false" />
                         </LinearLayout>
                     </HorizontalScrollView>
@@ -239,42 +227,42 @@
                                 android:layout_marginBottom="12dp"/>
 
                             <!-- Progress Bar -->
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:layout_marginBottom="12dp">
+<!--                            <LinearLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:orientation="vertical"-->
+<!--                                android:layout_marginBottom="12dp">-->
 
-                                <ProgressBar
-                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="8dp"
-                                    android:max="100"
-                                    android:progress="75"/>
-<!--                                    android:progressDrawable="@drawable/progress_bar_secondary_gradient"/>-->
+<!--                                <ProgressBar-->
+<!--                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="8dp"-->
+<!--                                    android:max="100"-->
+<!--                                    android:progress="75"/>-->
+<!--&lt;!&ndash;                                    android:progressDrawable="@drawable/progress_bar_secondary_gradient"/>&ndash;&gt;-->
 
-                                <RelativeLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp">
+<!--                                <RelativeLayout-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:layout_marginTop="4dp">-->
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Rp 7.5M"
-                                        android:textColor="#999999"
-                                        android:textSize="12sp"
-                                        android:layout_alignParentStart="true"/>
+<!--                                    <TextView-->
+<!--                                        android:layout_width="wrap_content"-->
+<!--                                        android:layout_height="wrap_content"-->
+<!--                                        android:text="Rp 7.5M"-->
+<!--                                        android:textColor="#999999"-->
+<!--                                        android:textSize="12sp"-->
+<!--                                        android:layout_alignParentStart="true"/>-->
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Target: Rp 10M"
-                                        android:textColor="#999999"
-                                        android:textSize="12sp"
-                                        android:layout_alignParentEnd="true"/>
-                                </RelativeLayout>
-                            </LinearLayout>
+<!--                                    <TextView-->
+<!--                                        android:layout_width="wrap_content"-->
+<!--                                        android:layout_height="wrap_content"-->
+<!--                                        android:text="Target: Rp 10M"-->
+<!--                                        android:textColor="#999999"-->
+<!--                                        android:textSize="12sp"-->
+<!--                                        android:layout_alignParentEnd="true"/>-->
+<!--                                </RelativeLayout>-->
+<!--                            </LinearLayout>-->
 
                             <!-- Poin & Sisa Hari -->
                             <RelativeLayout
@@ -361,42 +349,42 @@
                                 android:layout_marginBottom="12dp"/>
 
                             <!-- Progress Bar -->
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:layout_marginBottom="12dp">
+<!--                            <LinearLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:orientation="vertical"-->
+<!--                                android:layout_marginBottom="12dp">-->
 
-                                <ProgressBar
-                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="8dp"
-                                    android:max="100"
-                                    android:progress="45"/>
-<!--                                    android:progressDrawable="@drawable/progress_bar_primary_gradient"/>-->
+<!--                                <ProgressBar-->
+<!--                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="8dp"-->
+<!--                                    android:max="100"-->
+<!--                                    android:progress="45"/>-->
+<!--&lt;!&ndash;                                    android:progressDrawable="@drawable/progress_bar_primary_gradient"/>&ndash;&gt;-->
 
-                                <RelativeLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp">
+<!--                                <RelativeLayout-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:layout_marginTop="4dp">-->
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Rp 2.25M"
-                                        android:textColor="#999999"
-                                        android:textSize="12sp"
-                                        android:layout_alignParentStart="true"/>
+<!--                                    <TextView-->
+<!--                                        android:layout_width="wrap_content"-->
+<!--                                        android:layout_height="wrap_content"-->
+<!--                                        android:text="Rp 2.25M"-->
+<!--                                        android:textColor="#999999"-->
+<!--                                        android:textSize="12sp"-->
+<!--                                        android:layout_alignParentStart="true"/>-->
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Target: Rp 5M"
-                                        android:textColor="#999999"
-                                        android:textSize="12sp"
-                                        android:layout_alignParentEnd="true"/>
-                                </RelativeLayout>
-                            </LinearLayout>
+<!--                                    <TextView-->
+<!--                                        android:layout_width="wrap_content"-->
+<!--                                        android:layout_height="wrap_content"-->
+<!--                                        android:text="Target: Rp 5M"-->
+<!--                                        android:textColor="#999999"-->
+<!--                                        android:textSize="12sp"-->
+<!--                                        android:layout_alignParentEnd="true"/>-->
+<!--                                </RelativeLayout>-->
+<!--                            </LinearLayout>-->
 
                             <!-- Poin & Sisa Hari -->
                             <RelativeLayout
@@ -425,6 +413,280 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
                 <!-- Tambahkan lebih banyak Campaign Card di sini -->
+
+                <!-- CAMPAIGN CARD 3 -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Image Area -->
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/idcamp"
+                                android:contentDescription="Festival Sains" />
+
+                            <!-- TRENDING Tag -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TRENDING"
+                                android:textColor="#000000"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:paddingTop="4dp"
+                                android:paddingBottom="4dp"
+                                android:background="@drawable/bg_tag_green"
+                                android:layout_marginEnd="12dp"
+                                android:layout_marginTop="12dp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <!-- Details -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Festival Sains SMA IT Nur Hidayah"
+                                android:textColor="#333333"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Festival sains terbesar se-Sukoharjo untuk memperkenalkan inovasi teknologi"
+                                android:textColor="#666666"
+                                android:textSize="14sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <!-- Progress Bar -->
+                            <!--                            <LinearLayout-->
+                            <!--                                android:layout_width="match_parent"-->
+                            <!--                                android:layout_height="wrap_content"-->
+                            <!--                                android:orientation="vertical"-->
+                            <!--                                android:layout_marginBottom="12dp">-->
+
+                            <!--                                <ProgressBar-->
+                            <!--                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"-->
+                            <!--                                    android:layout_width="match_parent"-->
+                            <!--                                    android:layout_height="8dp"-->
+                            <!--                                    android:max="100"-->
+                            <!--                                    android:progress="75"/>-->
+                            <!--&lt;!&ndash;                                    android:progressDrawable="@drawable/progress_bar_secondary_gradient"/>&ndash;&gt;-->
+
+                            <!--                                <RelativeLayout-->
+                            <!--                                    android:layout_width="match_parent"-->
+                            <!--                                    android:layout_height="wrap_content"-->
+                            <!--                                    android:layout_marginTop="4dp">-->
+
+                            <!--                                    <TextView-->
+                            <!--                                        android:layout_width="wrap_content"-->
+                            <!--                                        android:layout_height="wrap_content"-->
+                            <!--                                        android:text="Rp 7.5M"-->
+                            <!--                                        android:textColor="#999999"-->
+                            <!--                                        android:textSize="12sp"-->
+                            <!--                                        android:layout_alignParentStart="true"/>-->
+
+                            <!--                                    <TextView-->
+                            <!--                                        android:layout_width="wrap_content"-->
+                            <!--                                        android:layout_height="wrap_content"-->
+                            <!--                                        android:text="Target: Rp 10M"-->
+                            <!--                                        android:textColor="#999999"-->
+                            <!--                                        android:textSize="12sp"-->
+                            <!--                                        android:layout_alignParentEnd="true"/>-->
+                            <!--                                </RelativeLayout>-->
+                            <!--                            </LinearLayout>-->
+
+                            <!-- Poin & Sisa Hari -->
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="10,000 Poin"
+                                    android:textColor="#3B82F6"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    android:layout_alignParentStart="true"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="15 hari lagi"
+                                    android:textColor="#999999"
+                                    android:textSize="12sp"
+                                    android:layout_alignParentEnd="true"
+                                    android:layout_centerVertical="true"/>
+                            </RelativeLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- CAMPAIGN CARD 4 -->
+<!--                <androidx.cardview.widget.CardView-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginBottom="24dp"-->
+<!--                    android:clickable="true"-->
+<!--                    android:focusable="true"-->
+<!--                    android:foreground="?android:attr/selectableItemBackground"-->
+<!--                    app:cardCornerRadius="16dp"-->
+<!--                    app:cardElevation="4dp"-->
+<!--                    app:cardBackgroundColor="@android:color/white">-->
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="vertical">-->
+
+<!--                        &lt;!&ndash; Image Area &ndash;&gt;-->
+<!--                        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="160dp">-->
+
+<!--                            <ImageView-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="match_parent"-->
+<!--                                android:scaleType="centerCrop"-->
+<!--                                android:src="@drawable/idcamp"-->
+<!--                                android:contentDescription="Festival Sains" />-->
+
+<!--                            &lt;!&ndash; TRENDING Tag &ndash;&gt;-->
+<!--                            <TextView-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="TRENDING"-->
+<!--                                android:textColor="#000000"-->
+<!--                                android:textSize="10sp"-->
+<!--                                android:textStyle="bold"-->
+<!--                                android:paddingStart="12dp"-->
+<!--                                android:paddingEnd="12dp"-->
+<!--                                android:paddingTop="4dp"-->
+<!--                                android:paddingBottom="4dp"-->
+<!--                                android:background="@drawable/bg_tag_green"-->
+<!--                                android:layout_marginEnd="12dp"-->
+<!--                                android:layout_marginTop="12dp"-->
+<!--                                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                                app:layout_constraintTop_toTopOf="parent" />-->
+<!--                        </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<!--                        &lt;!&ndash; Details &ndash;&gt;-->
+<!--                        <LinearLayout-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:orientation="vertical"-->
+<!--                            android:padding="20dp">-->
+
+<!--                            <TextView-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="Festival Sains SMA IT Nur Hidayah"-->
+<!--                                android:textColor="#333333"-->
+<!--                                android:textSize="16sp"-->
+<!--                                android:textStyle="bold"-->
+<!--                                android:layout_marginBottom="4dp"/>-->
+
+<!--                            <TextView-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="Festival sains terbesar se-Sukoharjo untuk memperkenalkan inovasi teknologi"-->
+<!--                                android:textColor="#666666"-->
+<!--                                android:textSize="14sp"-->
+<!--                                android:layout_marginBottom="12dp"/>-->
+
+<!--                            &lt;!&ndash; Progress Bar &ndash;&gt;-->
+<!--                            &lt;!&ndash;                            <LinearLayout&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                android:layout_width="match_parent"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                android:layout_height="wrap_content"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                android:orientation="vertical"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                android:layout_marginBottom="12dp">&ndash;&gt;-->
+
+<!--                            &lt;!&ndash;                                <ProgressBar&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:layout_width="match_parent"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:layout_height="8dp"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:max="100"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:progress="75"/>&ndash;&gt;-->
+<!--                            &lt;!&ndash;&lt;!&ndash;                                    android:progressDrawable="@drawable/progress_bar_secondary_gradient"/>&ndash;&gt;&ndash;&gt;-->
+
+<!--                            &lt;!&ndash;                                <RelativeLayout&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:layout_width="match_parent"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:layout_height="wrap_content"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                    android:layout_marginTop="4dp">&ndash;&gt;-->
+
+<!--                            &lt;!&ndash;                                    <TextView&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:layout_width="wrap_content"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:layout_height="wrap_content"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:text="Rp 7.5M"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:textColor="#999999"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:textSize="12sp"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:layout_alignParentStart="true"/>&ndash;&gt;-->
+
+<!--                            &lt;!&ndash;                                    <TextView&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:layout_width="wrap_content"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:layout_height="wrap_content"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:text="Target: Rp 10M"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:textColor="#999999"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:textSize="12sp"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                        android:layout_alignParentEnd="true"/>&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                </RelativeLayout>&ndash;&gt;-->
+<!--                            &lt;!&ndash;                            </LinearLayout>&ndash;&gt;-->
+
+<!--                            &lt;!&ndash; Poin & Sisa Hari &ndash;&gt;-->
+<!--                            <RelativeLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content">-->
+
+<!--                                <TextView-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="10,000 Poin"-->
+<!--                                    android:textColor="#3B82F6"-->
+<!--                                    android:textSize="14sp"-->
+<!--                                    android:textStyle="bold"-->
+<!--                                    android:layout_alignParentStart="true"/>-->
+
+<!--                                <TextView-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="15 hari lagi"-->
+<!--                                    android:textColor="#999999"-->
+<!--                                    android:textSize="12sp"-->
+<!--                                    android:layout_alignParentEnd="true"-->
+<!--                                    android:layout_centerVertical="true"/>-->
+<!--                            </RelativeLayout>-->
+<!--                        </LinearLayout>-->
+<!--                    </LinearLayout>-->
+<!--                </androidx.cardview.widget.CardView>-->
 
             </LinearLayout>
         </LinearLayout>

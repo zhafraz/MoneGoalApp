@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_gradient">
+
+    <!-- Header Dialog -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buat Tujuan Tabungan Baru"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:textColor="#004D40"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 1. Input Judul Tujuan (Nama Barang) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilGoalTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:hintTextColor="#4CAF50"
+        app:boxStrokeColor="#4CAF50"
+       >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etGoalTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nama Barang (Cth: Sepatu Bola)"
+            android:background="@drawable/bg_input_rounded"
+            android:inputType="textCapSentences"
+            android:maxLength="50" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 2. Input Deskripsi Tujuan (Untuk Apa) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilGoalDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:hintTextColor="#4CAF50"
+        app:boxStrokeColor="#4CAF50"
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etGoalDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Deskripsi (Cth: Untuk hadiah ulang tahun)"
+            android:inputType="textMultiLine"
+            android:lines="2"
+            android:background="@drawable/bg_input_rounded"
+            android:gravity="top"
+            android:maxLength="150"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 3. Input Target Harga -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilGoalPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:hintTextColor="#4CAF50"
+        app:boxStrokeColor="#4CAF50"
+        app:prefixText="Rp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etGoalPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Target Harga"
+            android:inputType="numberDecimal"
+            android:background="@drawable/bg_input_rounded"
+            android:maxLength="10"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Tombol Aksi -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelGoal"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Batal"
+            android:textColor="#757575"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveGoal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Simpan Tujuan"
+            android:backgroundTint="#4CAF50"
+            app:cornerRadius="10dp"/>
+    </LinearLayout>
+
+</LinearLayout>

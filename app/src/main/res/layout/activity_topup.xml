@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="#E0F7FA"
     android:fillViewport="true"
     tools:context=".TopupActivity">
 
@@ -13,12 +13,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- HEADER -->
+        <!-- ========== HEADER DENGAN TOMBOL BACK ========== -->
         <LinearLayout
+            android:id="@+id/headerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="#FFFFFF"
+            android:background="@drawable/bg_header_gradient"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
             android:paddingTop="16dp"
             android:paddingBottom="20dp"
             android:elevation="4dp">
@@ -27,90 +30,38 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="20dp"
-                android:layout_marginBottom="20dp">
+                android:gravity="center_vertical">
 
-                <ImageButton
-                    android:id="@+id/btnBack"
+                <!-- Tombol Back -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Kembali"
-                    app:tint="#1C1C1E"/>
-                <!--                android:src="@drawable/baseline_arrow_back_24"-->
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="#FFFFFF">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Top-up Saldo"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="#1C1C1E"
-                    android:gravity="center"/>
-
-                <View
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"/>
-            </LinearLayout>
-
-            <!-- INFO SALDO -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="20dp">
-
-                <androidx.cardview.widget.CardView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    app:cardCornerRadius="28dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="#E3F2FD">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="Wallet"
-                        app:tint="#2196F3"/>
-                    <!--                    android:src="@drawable/ic_wallet"-->
+                    <ImageButton
+                        android:id="@+id/btnBack"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Kembali"
+                        android:padding="8dp"
+                        android:src="@drawable/outline_arrow_left_24"
+                        app:tint="#2196F3" />
                 </androidx.cardview.widget.CardView>
 
-                <LinearLayout
-                    android:layout_width="0dp"
+                <!-- Judul Halaman -->
+                <TextView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="40dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dika"
-                        android:textSize="14sp"
-                        android:textColor="#8E8E93"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="*********2020"
-                        android:textSize="12sp"
-                        android:textColor="#C7C7CC"
-                        android:layout_marginTop="2dp"/>
-
-                    <TextView
-                        android:id="@+id/tvSaldo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Saldo: Rp 45.000"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#1C1C1E"
-                        android:layout_marginTop="4dp"/>
-                </LinearLayout>
+                    android:gravity="center"
+                    android:text="Riwayat Transaksi"
+                    android:textColor="#004D40"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
@@ -125,11 +76,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nominal Top-up"
+                android:text="Nominal Top-Up"
+                android:textColor="#004D40"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#1C1C1E"
-                android:layout_marginBottom="12dp"/>
+                android:drawablePadding="8dp"
+                app:tint="#333333"
+                android:layout_marginBottom="16dp"/>
 
             <!-- Display Nominal Besar -->
             <androidx.cardview.widget.CardView
@@ -192,7 +145,7 @@
                     android:layout_margin="6dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F0F9FF">
+                   >
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -220,7 +173,7 @@
                     android:layout_margin="6dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F0F9FF">
+                    >
 
                     <TextView
                         android:layout_width="match_parent"
@@ -242,7 +195,7 @@
                     android:layout_margin="6dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F0F9FF">
+                    >
 
                     <TextView
                         android:layout_width="match_parent"
@@ -263,7 +216,7 @@
                     android:layout_margin="6dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F0F9FF">
+                    >
 
                     <TextView
                         android:layout_width="match_parent"
@@ -285,7 +238,7 @@
                     android:layout_margin="6dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F0F9FF">
+                    >
 
                     <TextView
                         android:layout_width="match_parent"
@@ -306,7 +259,7 @@
                     android:layout_margin="6dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F0F9FF">
+                    >
 
                     <TextView
                         android:layout_width="match_parent"
@@ -410,8 +363,9 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_gravity="center"
+                                android:src="@drawable/inmoney"
                                 android:contentDescription="Bank"
-                                app:tint="#2196F3"/>
+                                />
                             <!--                                android:src="@drawable/ic_bank"/>-->
                         </androidx.cardview.widget.CardView>
 
@@ -585,7 +539,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lanjut"
+                        android:text="Konfirmasi"
                         android:textStyle="bold"
                         android:textColor="#FFFFFF"
                         android:textSize="16sp"/>

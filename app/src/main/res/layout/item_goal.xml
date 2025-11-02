@@ -29,16 +29,9 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_program_image_gradient"
+                android:background="@drawable/sic"
                 android:gravity="center">
 
-                <!-- ImageView untuk Ikon/Gambar Program (Bisa diganti dengan PNG/GIF/URL) -->
-                <ImageView
-                    android:id="@+id/imgProgramIcon"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/winning"
-                    android:contentDescription="Ikon Program" />
                 <!-- Catatan: Anda harus menyesuaikan sumber ikon ini di Adapter -->
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
