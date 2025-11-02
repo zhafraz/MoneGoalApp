@@ -13,6 +13,9 @@
         android:theme="@style/Theme.MoneGoal"
         tools:targetApi="31">
         <activity
+            android:name=".ScannerActivity"
+            android:exported="false" />
+        <activity
             android:name=".RiwayatTransaksiActivity"
             android:exported="false" />
         <activity
