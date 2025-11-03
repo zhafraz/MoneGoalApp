@@ -59,6 +59,16 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="4dp">
 
+                <TextView
+                    android:id="@+id/Target"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Target: Rp 1.000.000"
+                    android:textColor="#999999"
+                    android:textSize="12sp"
+                    android:layout_gravity="end"
+                    />
+
                 <!-- Progress Bar -->
                 <ProgressBar
                     android:id="@+id/pbGoalProgress"
@@ -89,13 +99,14 @@
                         android:layout_alignParentStart="true"/>
 
                     <!-- Nominal Target -->
-                    <TextView
+                    <Button
                         android:id="@+id/tvTargetAmount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        tools:text="Target: Rp 1.000.000"
-                        android:textColor="#999999"
+                        tools:text="Selesai"
+                        android:textColor="#FFFFFF"
                         android:textSize="12sp"
+                        android:backgroundTint="@color/warna_kapital"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"/>
                 </RelativeLayout>
