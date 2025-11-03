@@ -10,27 +10,44 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
+    app:cardElevation="6dp"
     app:cardBackgroundColor="@android:color/white">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <!-- Area Gambar (Dihilangkan sesuai permintaan) -->
+        <!-- Tag poin di pojok kanan atas -->
+        <TextView
+            android:id="@+id/tvPoints"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="500 poin"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:background="@drawable/bg_tag_yellow"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_alignParentEnd="true"
 
-        <!-- Details -->
+            />
+
+        <!-- Konten utama -->
         <LinearLayout
+            android:id="@+id/layoutContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_marginTop="23dp"
             android:padding="20dp">
 
-            <!-- Judul Tujuan (Nama Barang) -->
+            <!-- Judul Tujuan -->
             <TextView
                 android:id="@+id/tvGoalTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:text="Sepeda Gunung Merk Xtreme 26"
                 android:textColor="#333333"
@@ -38,12 +55,12 @@
                 android:textStyle="bold"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="6dp"/>
 
-            <!-- Deskripsi Tujuan (Untuk apa) -->
+            <!-- Deskripsi Tujuan -->
             <TextView
                 android:id="@+id/tvGoalDescription"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:text="Untuk digunakan saat kegiatan bersepeda bersama teman-teman di hari Minggu."
                 android:textColor="#666666"
@@ -52,66 +69,59 @@
                 android:ellipsize="end"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- Progress Bar Container -->
+            <!-- Target Label -->
+            <TextView
+                android:id="@+id/tvTargetLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Target: Rp 1.000.000"
+                android:textColor="#999999"
+                android:textSize="12sp"
+                android:gravity="end"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/pbGoalProgress"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:max="100"
+                android:progress="75"
+                android:progressTint="#4CAF50"
+                android:progressBackgroundTint="#E0E0E0"
+                android:layout_marginBottom="8dp"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="4dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <!-- Nominal Terkumpul -->
                 <TextView
-                    android:id="@+id/Target"
+                    android:id="@+id/tvCurrentAmount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Rp 750.000"
+                    android:textColor="#333333"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- Status atau Tombol -->
+                <Button
+                    android:id="@+id/btnGoalStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="Target: Rp 1.000.000"
-                    android:textColor="#999999"
+                    tools:text="Selesai"
+                    android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:layout_gravity="end"
-                    />
-
-                <!-- Progress Bar -->
-                <ProgressBar
-                    android:id="@+id/pbGoalProgress"
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp"
-                    android:max="100"
-                    android:progress="75"
-                    android:progressTint="#4CAF50"
-                    android:progressBackgroundTint="#E0E0E0"
-                    android:layout_marginBottom="4dp"/>
-
-                <!-- Progress Text -->
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
-
-                    <!-- Nominal Terkumpul -->
-                    <TextView
-                        android:id="@+id/tvCurrentAmount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Rp 750.000"
-                        android:textColor="#333333"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_alignParentStart="true"/>
-
-                    <!-- Nominal Target -->
-                    <Button
-                        android:id="@+id/tvTargetAmount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Selesai"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:backgroundTint="@color/warna_kapital"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"/>
-                </RelativeLayout>
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:backgroundTint="@color/warna_kapital" />
             </LinearLayout>
 
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 </androidx.cardview.widget.CardView>
