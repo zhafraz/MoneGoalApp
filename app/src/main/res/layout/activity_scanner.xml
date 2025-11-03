@@ -55,6 +55,9 @@
         android:paddingEnd="20dp"
         android:paddingTop="16dp"
         android:paddingBottom="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:elevation="4dp">
 
         <LinearLayout
@@ -120,6 +123,7 @@
         android:background="@drawable/bg_circular_button_translucent"
         android:contentDescription="Tombol Flash/Senter"
         android:padding="16dp"
+        android:backgroundTint="#00838F"
         android:src="@drawable/baseline_add_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
