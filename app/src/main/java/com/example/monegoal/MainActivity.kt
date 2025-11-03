@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
             val fragment = when (item.itemId) {
                 R.id.nav_beranda -> HomeFragment()
                 R.id.nav_campaign -> CampaignFragment()
-                R.id.nav_program -> ProgramFragment()
+                R.id.nav_goals -> GoalsFragment()
                 R.id.nav_ai_bantuan -> AiBantuanFragment()
                 R.id.nav_profile -> ProfileFragment()
                 else -> null

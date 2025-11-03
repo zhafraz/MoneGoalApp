@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#F5F7FA"
     android:fillViewport="true"
-    tools:context=".topupFragment">
+    tools:context=".TopupFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -87,6 +87,7 @@
                     android:layout_marginStart="16dp">
 
                     <TextView
+                        android:id="@+id/tvUserNameTopup"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Dika"
@@ -433,7 +434,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="1949160855"
+                                android:text="194*******"
                                 android:textSize="13sp"
                                 android:textColor="#8E8E93"
                                 android:layout_marginTop="2dp"/>

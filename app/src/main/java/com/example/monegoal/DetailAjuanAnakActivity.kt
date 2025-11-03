@@ -106,9 +106,6 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         tvSpentThisMonth = findViewById(R.id.tvSpentThisMonth)
 
         inputPesanBalasan = findViewById(R.id.inputPesanBalasan)
-        cbReward = findViewById(R.id.cbReward)
-        cbJadwal = findViewById(R.id.cbJadwal)
-        cbCatatan = findViewById(R.id.cbCatatan)
 
         btnSetujuPenuh = findViewById(R.id.btnSetujuPenuh)
         btnTolak = findViewById(R.id.btnTolak)

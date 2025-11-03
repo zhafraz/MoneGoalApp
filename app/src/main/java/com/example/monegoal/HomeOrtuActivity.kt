@@ -13,10 +13,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monegoal.adapter.SubmissionAdapter
 import com.example.monegoal.models.Submission
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.DocumentSnapshot
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -32,7 +32,6 @@ class HomeOrtuActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var tvNoSubmissions: TextView
 
-    private lateinit var cardManageChildren: CardView
     private lateinit var cardDetailPengajuan: CardView
     private lateinit var cardTopup: CardView
 
@@ -44,7 +43,7 @@ class HomeOrtuActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_home_ortu)
 
-        // padding edge-to-edge
+        // safe edge-to-edge padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -54,18 +53,26 @@ class HomeOrtuActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        // Inisialisasi view dari layout
+        bindViews()          // inisialisasi semua view
+        setupRecycler()      // setup adapter & recycler
+        setupNavigation()    // pasang listener setelah view di-bind
+
+        loadParentHomeData() // load data
+    }
+
+    private fun bindViews() {
+        // pastikan ID di layout sama persis dengan ini
         tvUserName = findViewById(R.id.tvUserName)
         tvUserRole = findViewById(R.id.tvUserRole)
         tvTotalBalance = findViewById(R.id.tvTotalChildBalance)
         tvPendingCount = findViewById(R.id.tvPendingSubmissions)
         recyclerView = findViewById(R.id.recyclerViewSubmissions)
         tvNoSubmissions = findViewById(R.id.tvNoSubmissions)
-        cardManageChildren = findViewById(R.id.cardManageChildren)
         cardDetailPengajuan = findViewById(R.id.cardSetTask)
         cardTopup = findViewById(R.id.cardTopup)
+    }
 
-        // Setup RecyclerView
+    private fun setupRecycler() {
         adapter = SubmissionAdapter(submissionList) { submission ->
             val intent = Intent(this, DetailAjuanAnakActivity::class.java)
             intent.putExtra("submissionId", submission.id)
@@ -73,24 +80,30 @@ class HomeOrtuActivity : AppCompatActivity() {
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
-
-        loadParentHomeData()
-        setupNavigation()
     }
 
-    /**
-     * Load data yang diperlukan untuk home orang tua:
-     * 1) Tentukan parentEmail: dari Intent extra atau fallback ke auth.currentUser?.email
-     * 2) Ambil parent doc dari koleksi "parents" berdasarkan encoded email (parentId)
-     * 3) Query users dimana parents array contains parentId untuk mendapatkan daftar anak
-     */
+    private fun setupNavigation() {
+
+        cardDetailPengajuan.setOnClickListener {
+            // buka activity detail (pastikan dideklarasikan di manifest)
+            startActivity(Intent(this, DetailAjuanAnakActivity::class.java))
+        }
+
+        cardTopup.setOnClickListener {
+            startActivity(Intent(this, TopupActivity::class.java))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadParentHomeData()
+    }
+
     private fun loadParentHomeData() {
-        // Ambil parentEmail yang dikirim lewat Intent (LoginOrtuActivity mengirimkan ini).
         val intentEmail = intent.getStringExtra("parentEmail")
         val parentEmail = intentEmail ?: auth.currentUser?.email
 
         if (parentEmail.isNullOrBlank()) {
-            // Tidak ada parent email -> fallback: tampilkan nama default dan kosongkan data
             tvUserName.text = "Orang Tua"
             tvUserRole.text = "Pengelola Keluarga (0 Anak)"
             tvTotalBalance.text = formatCurrency(0L)
@@ -102,44 +115,45 @@ class HomeOrtuActivity : AppCompatActivity() {
 
         val parentId = encodeEmailToId(parentEmail)
 
-        // Ambil info parent dari koleksi "parents" untuk menampilkan nama yang benar.
+        // ambil nama parent (jika ada)
         firestore.collection("parents").document(parentId)
             .get()
-            .addOnSuccessListener { parentSnap: DocumentSnapshot ->
+            .addOnSuccessListener { parentSnap ->
                 val parentName = parentSnap.getString("name") ?: parentEmail.substringBefore("@")
                 tvUserName.text = parentName
             }
             .addOnFailureListener {
-                // jika gagal, gunakan email sebagai fallback
                 tvUserName.text = parentEmail.substringBefore("@")
             }
 
-        // Query koleksi "users" -> cari anak yang memiliki parents array contains parentId
+        // ambil anak-anak yang memiliki parentId di field "parents" (array)
         firestore.collection("users")
             .whereArrayContains("parents", parentId)
             .get()
-            .addOnSuccessListener { docs: QuerySnapshot ->
+            .addOnSuccessListener { docs ->
                 val totalChildren = docs.size()
                 var totalBalance = 0L
                 val childIds = mutableListOf<String>()
 
-                // iterasi setiap dokumen anak
                 for (doc in docs.documents) {
                     val bal = doc.getLong("balance") ?: 0L
                     totalBalance += bal
                     childIds.add(doc.id)
                 }
 
-                // Update UI: jumlah anak, total balance
                 tvUserRole.text = "Pengelola Keluarga ($totalChildren Anak)"
                 tvTotalBalance.text = formatCurrency(totalBalance)
 
-                // Load pengajuan (submissions) untuk anak-anak ini
-                loadSubmissionsForChildren(childIds)
+                if (childIds.isNotEmpty()) {
+                    loadSubmissionsForChildren(childIds)
+                } else {
+                    tvNoSubmissions.visibility = View.VISIBLE
+                    recyclerView.visibility = View.GONE
+                    tvPendingCount.text = "0"
+                }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Gagal memuat data anak: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                // tampil data kosong / default
                 tvUserRole.text = "Pengelola Keluarga (0 Anak)"
                 tvTotalBalance.text = formatCurrency(0L)
                 tvPendingCount.text = "0"
@@ -158,7 +172,7 @@ class HomeOrtuActivity : AppCompatActivity() {
             return
         }
 
-        // Firestore tidak mendukung whereIn > 10 elements; mengambil maksimal 10
+        // Firestore whereIn max 10 — ambil 10 pertama jika lebih banyak
         val queryIds = if (childIds.size > 10) childIds.take(10) else childIds
 
         firestore.collection("submissions")
@@ -167,21 +181,37 @@ class HomeOrtuActivity : AppCompatActivity() {
             .addOnSuccessListener { snapshot: QuerySnapshot ->
                 submissionList.clear()
 
-                // filter untuk status pending/new (sesuaikan field status di db Anda)
                 val filtered = snapshot.documents.filter { d ->
                     val status = d.getString("status") ?: ""
                     status.equals("pending", ignoreCase = true) || status.equals("new", ignoreCase = true)
                 }
 
                 for (doc in filtered) {
+                    // safe ambil amount (Long), createdAt (timestamp atau long)
+                    val amount = doc.getLong("amount") ?: 0L
+
+                    // handle createdAt: bisa berupa Timestamp atau Long tergantung penulisan di server
+                    val createdAtMillis: Long = when {
+                        doc.contains("createdAt") -> {
+                            val tsObj = doc.get("createdAt")
+                            when (tsObj) {
+                                is Timestamp -> tsObj.toDate().time
+                                is Long -> tsObj
+                                is Number -> tsObj.toLong()
+                                else -> System.currentTimeMillis()
+                            }
+                        }
+                        else -> System.currentTimeMillis()
+                    }
+
                     submissionList.add(
                         Submission(
                             id = doc.id,
                             childName = doc.getString("childName") ?: "Anak",
                             title = doc.getString("title") ?: (doc.getString("category") ?: "Pengajuan"),
-                            amount = doc.getLong("amount") ?: 0,
+                            amount = amount,
                             status = doc.getString("status") ?: "unknown",
-                            createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+                            createdAt = createdAtMillis
                         )
                     )
                 }
@@ -201,33 +231,13 @@ class HomeOrtuActivity : AppCompatActivity() {
             }
     }
 
-    private fun setupNavigation() {
-        cardManageChildren.setOnClickListener {
-            Toast.makeText(this, "Fitur Riwayat Transaksi belum diimplementasikan", Toast.LENGTH_SHORT).show()
-        }
-
-        cardDetailPengajuan.setOnClickListener {
-            startActivity(Intent(this, DetailAjuanAnakActivity::class.java))
-        }
-
-        cardTopup.setOnClickListener {
-            startActivity(Intent(this, TopupActivity::class.java))
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // reload data setiap resume agar UI up-to-date
-        loadParentHomeData()
-    }
-
     private fun formatCurrency(amount: Long): String {
         val formatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(amount)
-        // memastikan format "Rp 1.000" (ada spasi setelah Rp)
         return formatted.replace("Rp", "Rp ").trim()
     }
 
     private fun encodeEmailToId(email: String): String {
+        // gunakan encoding yang konsisten di seluruh app
         return email.replace("@", "_at_").replace(".", "_dot_")
     }
 }

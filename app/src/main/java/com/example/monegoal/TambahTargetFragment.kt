@@ -1,59 +1,82 @@
 package com.example.monegoal
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import com.example.monegoal.models.Goal
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [TambahTargetFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class TambahTargetFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var etTitle: EditText
+    private lateinit var etDescription: EditText
+    private lateinit var etTargetAmount: EditText
+    private lateinit var btnSave: Button
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_tambah_target, container, false)
+        val view = inflater.inflate(R.layout.fragment_tambah_target, container, false)
+
+        db = FirebaseFirestore.getInstance()
+        etTitle = view.findViewById(R.id.etGoalTitle)
+        etDescription = view.findViewById(R.id.etGoalDescription)
+        etTargetAmount = view.findViewById(R.id.etGoalPrice)
+        btnSave = view.findViewById(R.id.btnSaveGoal)
+
+        btnSave.setOnClickListener { saveGoal() }
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TambahTargetFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            TambahTargetFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun saveGoal() {
+        val title = etTitle.text.toString().trim()
+        val description = etDescription.text.toString().trim()
+        val targetStr = etTargetAmount.text.toString().trim()
+
+        if (title.isEmpty() || targetStr.isEmpty()) {
+            Toast.makeText(requireContext(), "Judul dan target harus diisi", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val targetAmount = targetStr.toLongOrNull()
+        if (targetAmount == null || targetAmount <= 0) {
+            Toast.makeText(requireContext(), "Target harus angka lebih dari 0", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val points = (targetAmount / 1000).toInt() // 1 poin per 1000
+
+        val goal = Goal(
+            title = title,
+            description = description,
+            targetAmount = targetAmount,
+            currentAmount = 0,
+            points = points
+        )
+
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        db.collection("users").document(userId).collection("goals")
+            .add(goal)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Goal berhasil ditambahkan", Toast.LENGTH_SHORT).show()
+
+                // Navigasi manual ke GoalsFragment
+                (activity as? MainActivity)?.navigateTo(
+                    GoalsFragment(),
+                    menuItemId = R.id.nav_goals,
+                    addToBackStack = false
+                )
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Gagal menambahkan goal", Toast.LENGTH_SHORT).show()
             }
     }
 }

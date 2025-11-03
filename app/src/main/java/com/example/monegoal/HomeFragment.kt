@@ -21,7 +21,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var cardChat: CardView
     private lateinit var cardAddMoney: CardView
-    private lateinit var cardAddPrestasi: CardView
+    private lateinit var cardAddGoals: CardView
     private lateinit var cardNews: CardView
     private lateinit var recyclerViewGoals: RecyclerView
 
@@ -54,7 +54,7 @@ class HomeFragment : Fragment() {
         // cards
         cardChat = view.findViewById(R.id.cardChat)
         cardAddMoney = view.findViewById(R.id.cardAddMoney)
-        cardAddPrestasi = view.findViewById(R.id.cardAddPrestasi)
+        cardAddGoals = view.findViewById(R.id.cardAddGoals)
         cardNews = view.findViewById(R.id.cardNews)
         recyclerViewGoals = view.findViewById(R.id.recyclerViewGoals)
 
@@ -71,9 +71,9 @@ class HomeFragment : Fragment() {
             (activity as? MainActivity)?.navigateTo(TopupFragment(), null, addToBackStack = true)
                 ?: navigateToFragment(TopupFragment())
         }
-        cardAddPrestasi.setOnClickListener {
-            (activity as? MainActivity)?.navigateTo(ProgramFragment(), R.id.nav_program, addToBackStack = true)
-                ?: navigateToFragment(ProgramFragment())
+        cardAddGoals.setOnClickListener {
+            (activity as? MainActivity)?.navigateTo(TambahTargetFragment(), R.id.nav_goals, addToBackStack = true)
+                ?: navigateToFragment(GoalsFragment())
         }
         cardNews.setOnClickListener {
             (activity as? MainActivity)?.navigateTo(CampaignFragment(), R.id.nav_campaign, addToBackStack = true)
@@ -94,6 +94,7 @@ class HomeFragment : Fragment() {
 
         loadUserData()
     }
+
 
     private fun navigateToFragment(fragment: Fragment) {
         requireActivity().supportFragmentManager.beginTransaction()
