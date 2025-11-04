@@ -41,11 +41,9 @@ class GoalsFragment : Fragment() {
 
         adapter = ChildGoalsAdapter(goalList,
             onClick = { goal ->
-                // aksi klik item (buka detail, dsb). Untuk sekarang cuma toast.
                 Toast.makeText(requireContext(), "Klik: ${goal.title}", Toast.LENGTH_SHORT).show()
             },
             onComplete = { goal ->
-                // dipanggil saat user menekan tombol "Selesai"
                 markGoalComplete(goal)
             }
         )
@@ -105,7 +103,6 @@ class GoalsFragment : Fragment() {
         batch.commit()
             .addOnSuccessListener {
                 Toast.makeText(requireContext(), "Goal selesai — ${goal.points} poin ditambahkan!", Toast.LENGTH_SHORT).show()
-                // listener realtime akan menghapus item dari list otomatis
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Gagal menyelesaikan goal: ${e.message}", Toast.LENGTH_LONG).show()

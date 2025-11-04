@@ -1,59 +1,79 @@
 package com.example.monegoal
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.fragment.app.DialogFragment
+import com.google.android.material.button.MaterialButton
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class KodeUndanganFragment : DialogFragment() {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [KodeUndanganFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class KodeUndanganFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    companion object {
+        private const val ARG_CODE = "arg_invite_code"
+        private const val ARG_PARENT_EMAIL = "arg_parent_email"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+        fun newInstance(code: String, parentEmail: String?): KodeUndanganFragment {
+            val f = KodeUndanganFragment()
+            val args = Bundle()
+            args.putString(ARG_CODE, code)
+            args.putString(ARG_PARENT_EMAIL, parentEmail)
+            f.arguments = args
+            return f
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_kode_undangan, container, false)
+    private var inviteCode: String? = null
+    private var parentEmail: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        inviteCode = arguments?.getString(ARG_CODE)
+        parentEmail = arguments?.getString(ARG_PARENT_EMAIL)
+        setStyle(STYLE_NO_TITLE, android.R.style.Theme_Material_Light_Dialog_Alert)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment KodeUndanganFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            KodeUndanganFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        // inflate your provided layout (the card xml you posted). Put that layout file in res/layout/dialog_invite_code.xml
+        val view = inflater.inflate(R.layout.fragment_kode_undangan, container, false)
+
+        val tvInvitationCode = view.findViewById<TextView>(R.id.tvInvitationCode)
+        val btnCopyCode = view.findViewById<MaterialButton>(R.id.btnCopyCode)
+        val btnClose = view.findViewById<MaterialButton>(R.id.btnClose)
+
+        tvInvitationCode.text = inviteCode ?: ""
+
+        btnCopyCode.setOnClickListener {
+            val clip = ClipData.newPlainText("invite_code", inviteCode ?: "")
+            val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(clip)
+            // simple feedback
+            android.widget.Toast.makeText(requireContext(), "Kode disalin", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        btnClose.setOnClickListener {
+            // setelah menutup, lanjut ke LoginActivity (sesuaikan jika mau ke layar lain)
+            dismiss()
+            val ctx = requireActivity()
+            val intent = Intent(ctx, LoginActivity::class.java)
+            // optional: lempar parent email agar login prefill
+            if (!parentEmail.isNullOrBlank()) intent.putExtra("emailOrtu", parentEmail)
+            ctx.startActivity(intent)
+            ctx.finish()
+        }
+
+        return view
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // set dialog width to match parent - agar tampilan mirip card center
+        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
     }
 }

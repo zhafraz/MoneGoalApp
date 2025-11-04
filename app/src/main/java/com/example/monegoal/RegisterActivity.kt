@@ -1,5 +1,8 @@
 package com.example.monegoal
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.*
@@ -106,6 +109,8 @@ class RegisterActivity : AppCompatActivity() {
                     firebaseUser.updateProfile(userProfileChangeRequest { displayName = nama })
 
                     val inviteCode = generateInviteCode()
+
+                    // Simpan kedua field saldo baru (saldoAnak & saldoOrtu) + legacy 'saldo' agar backward-compatible
                     val userMap = hashMapOf(
                         "uid" to uid,
                         "name" to nama,
@@ -114,7 +119,11 @@ class RegisterActivity : AppCompatActivity() {
                         "school" to sekolah,
                         "grade" to jenjang,
                         "email" to email,
-                        "balance" to 0,
+                        // legacy
+                        "saldo" to 0L,
+                        // new explicit fields
+                        "saldoAnak" to 0L,
+                        "saldoOrtu" to 0L,
                         "points" to 0,
                         "inviteCode" to inviteCode,
                         "parents" to arrayListOf(emailOrtu),
@@ -127,6 +136,7 @@ class RegisterActivity : AppCompatActivity() {
                             linkParentWithChild(uid, namaOrtu, emailOrtu, inviteCode)
                         }
                         .addOnFailureListener { e ->
+                            // rollback user auth account if writing user doc gagal
                             firebaseUser.delete()
                             showError("Gagal menyimpan data: ${e.message}")
                         }
@@ -161,6 +171,8 @@ class RegisterActivity : AppCompatActivity() {
                     "name" to namaOrtu,
                     "childrenUIDs" to arrayListOf(uid),
                     "totalChildren" to 1,
+                    // set parent's saldo field explicitly
+                    "saldoOrtu" to 0L,
                     "createdAt" to FieldValue.serverTimestamp()
                 )
                 transaction.set(parentRef, parentData)
@@ -169,18 +181,16 @@ class RegisterActivity : AppCompatActivity() {
             progressDialog?.dismiss()
             btnRegister.isEnabled = true
 
-            // setelah semua sukses -> langsung buka HomeActivity
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.putExtra("inviteCode", inviteCode)
-            intent.putExtra("emailOrtu", emailOrtu)
-            startActivity(intent)
-            finish()
+            // Tampilkan popup kode undangan menggunakan DialogFragment
+            val inviteDialog = KodeUndanganFragment.newInstance(inviteCode, emailOrtu)
+            inviteDialog.show(supportFragmentManager, "invite_code_dialog")
         }.addOnFailureListener { e ->
             showError("Gagal menyimpan data ortu: ${e.message}")
         }
     }
 
     private fun encodeEmailToId(email: String): String {
+        // gunakan encoding yang konsisten di seluruh app
         return email.replace(".", "_").replace("@", "_at_")
     }
 

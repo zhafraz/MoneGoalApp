@@ -1,387 +1,207 @@
 package com.example.monegoal
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.text.InputType
-import android.view.View
 import android.widget.*
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.*
-
 
 class DetailAjuanAnakActivity : AppCompatActivity() {
 
-    // UI refs (sesuaikan dengan id di layout)
-    private lateinit var btnBack: ImageButton
-    private lateinit var tvHeaderTitle: TextView
-
-    // statistik (PASTIKAN kamu menambahkan id ini ke XML)
-    private lateinit var tvCountNew: TextView
-    private lateinit var tvCountApproved: TextView
-    private lateinit var tvCountRejected: TextView
-    private lateinit var tvCountPending: TextView
-
-    // detail pengajuan
     private lateinit var tvChildName: TextView
     private lateinit var tvChildInfo: TextView
     private lateinit var tvNominal: TextView
     private lateinit var tvCategory: TextView
     private lateinit var tvReason: TextView
-
-    // history
     private lateinit var tvBalanceChild: TextView
     private lateinit var tvSpentThisMonth: TextView
-
-    // pesan + opsi
-    private lateinit var inputPesanBalasan: EditText
-    private lateinit var cbReward: CheckBox
-    private lateinit var cbJadwal: CheckBox
-    private lateinit var cbCatatan: CheckBox
-
-    // tombol aksi (CardView clickable)
+    private lateinit var tvCountNew: TextView
+    private lateinit var tvCountApproved: TextView
+    private lateinit var tvCountRejected: TextView
+    private lateinit var tvCountPending: TextView
     private lateinit var btnSetujuPenuh: CardView
     private lateinit var btnTolak: CardView
     private lateinit var btnTunda: CardView
+    private lateinit var headerTitle: TextView
 
-    // firebase
-    private val firestore = FirebaseFirestore.getInstance()
+    private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // data dokumen
+    private var childId: String? = null
     private var submissionId: String? = null
-    private var submissionDoc: DocumentSnapshot? = null
-
-    // konfigurasi reward default (bisa ubah)
-    private val rewardAmount = 10000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_detail_ajuan_anak)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        // ambil submissionId dari intent
+        childId = intent.getStringExtra("childId")
         submissionId = intent.getStringExtra("submissionId")
-        if (submissionId == null) {
-            Toast.makeText(this, "Submission ID tidak ditemukan", Toast.LENGTH_LONG).show()
-            finish()
-            return
-        }
 
-        bindViews()
-        setListeners()
-        loadSubmissionAndStats()
+        initViews()
+        loadSubmissionData()
+        setupButtonListeners()
     }
 
-    private fun bindViews() {
-        btnBack = findViewById(R.id.btnBack)
-        tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
-
-        tvCountNew = findViewById(R.id.tvCountNew)
-        tvCountApproved = findViewById(R.id.tvCountApproved)
-        tvCountRejected = findViewById(R.id.tvCountRejected)
-        tvCountPending = findViewById(R.id.tvCountPending)
-
+    private fun initViews() {
         tvChildName = findViewById(R.id.tvChildName)
         tvChildInfo = findViewById(R.id.tvChildInfo)
         tvNominal = findViewById(R.id.tvNominal)
         tvCategory = findViewById(R.id.tvCategory)
         tvReason = findViewById(R.id.tvReason)
-
         tvBalanceChild = findViewById(R.id.tvBalanceChild)
         tvSpentThisMonth = findViewById(R.id.tvSpentThisMonth)
-
-        inputPesanBalasan = findViewById(R.id.inputPesanBalasan)
-
+        tvCountNew = findViewById(R.id.tvCountNew)
+        tvCountApproved = findViewById(R.id.tvCountApproved)
+        tvCountRejected = findViewById(R.id.tvCountRejected)
+        tvCountPending = findViewById(R.id.tvCountPending)
         btnSetujuPenuh = findViewById(R.id.btnSetujuPenuh)
         btnTolak = findViewById(R.id.btnTolak)
         btnTunda = findViewById(R.id.btnTunda)
+        headerTitle = findViewById(R.id.tvHeaderTitle)
     }
 
-    private fun setListeners() {
-        btnBack.setOnClickListener { finish() }
+    private fun loadSubmissionData() {
+        if (submissionId == null) return
 
-        btnSetujuPenuh.setOnClickListener {
-            askForLimitThenApprove()
-        }
+        db.collection("submissions").document(submissionId!!)
+            .addSnapshotListener { doc, e ->
+                if (e != null || doc == null || !doc.exists()) return@addSnapshotListener
 
-        btnTolak.setOnClickListener {
-            showRejectConfirmation()
-        }
+                val amount = doc.getLong("amount") ?: 0
+                val category = doc.getString("category") ?: "-"
+                val reason = doc.getString("reason") ?: "-"
+                val status = doc.getString("status") ?: "pending"
+                val createdAt = (doc.getTimestamp("createdAt") ?: Timestamp.now()).toDate()
+                val childName = doc.getString("childName") ?: "Anak"
+                childId = doc.getString("childId") ?: ""
 
-        btnTunda.setOnClickListener {
-            showDelayDialog()
-        }
-    }
+                val formattedDate = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID")).format(createdAt)
 
-    private fun loadSubmissionAndStats() {
-        val subRef = firestore.collection("submissions").document(submissionId!!)
-        subRef.get().addOnSuccessListener { doc ->
-            if (!doc.exists()) {
-                Toast.makeText(this, "Pengajuan tidak ditemukan", Toast.LENGTH_SHORT).show()
-                finish()
-                return@addOnSuccessListener
-            }
+                tvChildName.text = childName
+                tvChildInfo.text = "Diajukan pada $formattedDate"
+                tvNominal.text = formatCurrency(amount)
+                tvCategory.text = category
+                tvReason.text = reason
 
-            submissionDoc = doc
-            bindSubmissionToUI(doc)
-
-            val childId = doc.getString("childId")
-            if (!childId.isNullOrBlank()) {
-                loadChildSummary(childId)
-            }
-
-            loadSubmissionCounts()
-        }.addOnFailureListener { e ->
-            Toast.makeText(this, "Gagal memuat pengajuan: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun bindSubmissionToUI(doc: DocumentSnapshot) {
-        val childName = doc.getString("childName") ?: doc.getString("childId") ?: "Anak"
-        val createdAt = doc.getTimestamp("createdAt")
-        val ageAndDate = if (createdAt != null) {
-            "${createdAt.toDate()}"
-        } else ""
-        val amount = doc.getLong("amount") ?: 0L
-        val category = doc.getString("category") ?: "-"
-        val reason = doc.getString("reason") ?: "-"
-        val status = doc.getString("status") ?: "pending"
-
-        tvChildName.text = childName
-        tvChildInfo.text = ageAndDate
-        tvNominal.text = "Rp %,d".format(amount)
-        tvCategory.text = category
-        tvReason.text = reason
-
-        // history placeholder (jika dokumen berisi data history, tampilkan)
-        tvBalanceChild.text = "Rp ${doc.getLong("childBalance") ?: "..." }"
-        tvSpentThisMonth.text = "Rp ${doc.getLong("childSpentThisMonth") ?: "0"}"
-    }
-
-    private fun loadChildSummary(childId: String) {
-        val userRef = firestore.collection("users").document(childId)
-        userRef.get().addOnSuccessListener { udoc ->
-            if (udoc.exists()) {
-                val balance = udoc.getLong("balance") ?: 0L
-                val name = udoc.getString("name") ?: "Anak"
-                tvBalanceChild.text = "Rp %,d".format(balance)
-                if (tvChildName.text.isNullOrBlank()) tvChildName.text = name
-            }
-        }
-
-        firestore.collection("submissions")
-            .whereEqualTo("childId", childId)
-            .whereIn("status", listOf("approved", "rejected"))
-            .orderBy("createdAt")
-            .get()
-            .addOnSuccessListener { query ->
-                if (query.isEmpty) {
-                    tvSpentThisMonth.text = "Belum ada riwayat"
-                    return@addOnSuccessListener
-                }
-
-                val totalApproved = query.filter { it.getString("status") == "approved" }
-                    .sumOf { it.getLong("amount") ?: 0L }
-
-                val totalRejected = query.filter { it.getString("status") == "rejected" }.size
-
-                tvSpentThisMonth.text =
-                    "Disetujui: Rp %,d | Ditolak: %d".format(totalApproved, totalRejected)
-            }
-            .addOnFailureListener { e ->
-                tvSpentThisMonth.text = "Gagal memuat riwayat: ${e.message}"
+                updateStatusHeader(status)
+                if (!childId.isNullOrEmpty()) loadChildFinancialData(childId!!)
             }
     }
 
-    private fun loadSubmissionCounts() {
-        firestore.collection("submissions")
-            .get()
-            .addOnSuccessListener { query ->
-                var countNew = 0
-                var countApproved = 0
-                var countRejected = 0
-                var countPending = 0
+    private fun loadChildFinancialData(childId: String) {
+        // ambil saldo dari users
+        db.collection("users").document(childId)
+            .addSnapshotListener { doc, e ->
+                if (e != null || doc == null || !doc.exists()) return@addSnapshotListener
 
-                for (doc in query) {
-                    when (doc.getString("status")) {
-                        "new" -> countNew++
-                        "approved" -> countApproved++
-                        "rejected" -> countRejected++
-                        "pending" -> countPending++
+                val balance = doc.getLong("saldo") ?: doc.getLong("balance") ?: 0
+                tvBalanceChild.text = formatCurrency(balance)
+
+                // Ambil transaksi anak
+                db.collection("users").document(childId)
+                    .collection("transactions")
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        var pemasukan = 0L
+                        var pengeluaran = 0L
+
+                        for (d in snapshot.documents) {
+                            val type = d.getString("type")?.lowercase() ?: ""
+                            val category = d.getString("category")?.lowercase() ?: ""
+                            val amount = d.getLong("amount") ?: 0L
+
+                            if (type in listOf("pemasukan", "income") || category in listOf("topup", "deposit")) {
+                                pemasukan += amount
+                            } else if (type in listOf("pengeluaran", "expense") || category in listOf("belanja", "pembelian")) {
+                                pengeluaran += amount
+                            }
+                        }
+
+                        tvSpentThisMonth.text = formatCurrency(pengeluaran)
                     }
-                }
 
-                tvCountNew.text = countNew.toString()
-                tvCountApproved.text = countApproved.toString()
-                tvCountRejected.text = countRejected.toString()
-                tvCountPending.text = countPending.toString()
-            }
-    }
+                // Hitung statistik pengajuan anak
+                db.collection("submissions")
+                    .whereEqualTo("childId", childId)
+                    .get()
+                    .addOnSuccessListener { q ->
+                        var approved = 0
+                        var rejected = 0
+                        var pending = 0
+                        var newCount = 0
 
-    private fun askForLimitThenApprove() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Aturan tambahan (opsional)")
-        builder.setMessage("Masukkan limit pemakaian (contoh: 50000) atau kosongkan untuk tanpa limit")
-
-        val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        input.hint = "Limit pemakaian (Rp)"
-        builder.setView(input)
-
-        builder.setPositiveButton("Setujui & Simpan") { dialog, _ ->
-            val limitStr = input.text.toString().trim()
-            val limitValue = if (limitStr.isNotEmpty()) limitStr.toLongOrNull() else null
-            dialog.dismiss()
-            performApprove(limitValue)
-        }
-        builder.setNegativeButton("Batal") { d, _ -> d.dismiss() }
-        builder.show()
-    }
-
-    private fun performApprove(limitPemakaian: Long?) {
-        val doc = submissionDoc ?: run {
-            Toast.makeText(this, "Data pengajuan belum dimuat", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val childId = doc.getString("childId") ?: run {
-            Toast.makeText(this, "childId tidak tersedia", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val amount = doc.getLong("amount") ?: 0L
-        val submissionRef = firestore.collection("submissions").document(submissionId!!)
-
-        // prepare update map
-        val updates = hashMapOf<String, Any>(
-            "status" to "approved",
-            "parentResponse" to (inputPesanBalasan.text.toString().trim()),
-            "parentId" to (auth.currentUser?.uid ?: "unknown"),
-            "respondedAt" to FieldValue.serverTimestamp()
-        )
-        if (limitPemakaian != null) {
-            updates["usageLimit"] = limitPemakaian
-        }
-        if (cbReward.isChecked) {
-            updates["rewardGiven"] = true
-            updates["rewardAmount"] = rewardAmount
-        }
-
-        // Update submission first, then update child's balance in a transaction / atomic increment
-        submissionRef.update(updates as Map<String, Any>).addOnSuccessListener {
-            // increment child's balance by amount + reward (if any)
-            val incrementBy = amount + if (cbReward.isChecked) rewardAmount else 0L
-            val childRef = firestore.collection("users").document(childId)
-            childRef.update("balance", FieldValue.increment(incrementBy))
-                .addOnSuccessListener {
-                    // optionally record transaction history: add doc in child transactions collection
-                    val tx = hashMapOf(
-                        "type" to "credit",
-                        "amount" to amount,
-                        "note" to "Persetujuan pengajuan oleh orang tua",
-                        "timestamp" to FieldValue.serverTimestamp(),
-                        "fromParentId" to (auth.currentUser?.uid ?: "parent")
-                    )
-                    firestore.collection("users").document(childId)
-                        .collection("transactions")
-                        .add(tx)
-                        .addOnSuccessListener {
-                            Toast.makeText(this, "Pengajuan disetujui — saldo anak terupdate.", Toast.LENGTH_LONG).show()
-                            finish()
+                        for (d in q) {
+                            when (d.getString("status")?.lowercase()) {
+                                "approved" -> approved++
+                                "rejected" -> rejected++
+                                "pending" -> pending++
+                                "new" -> newCount++
+                            }
                         }
-                        .addOnFailureListener { e ->
-                            // walaupun transaksi history gagal, saldo sudah ditambah
-                            Toast.makeText(this, "Disetujui, namun gagal menyimpan riwayat: ${e.message}", Toast.LENGTH_LONG).show()
-                            finish()
-                        }
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "Gagal mengupdate saldo anak: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-        }.addOnFailureListener { e ->
-            Toast.makeText(this, "Gagal update pengajuan: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
 
-    private fun showRejectConfirmation() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Tolak pengajuan?")
-        builder.setMessage("Apakah Anda yakin ingin menolak pengajuan ini?")
-        builder.setPositiveButton("Tolak") { d, _ ->
-            d.dismiss()
-            performReject()
-        }
-        builder.setNegativeButton("Batal") { d, _ -> d.dismiss() }
-        builder.show()
-    }
-
-    private fun performReject() {
-        val submissionRef = firestore.collection("submissions").document(submissionId!!)
-        val updates = hashMapOf<String, Any>(
-            "status" to "rejected",
-            "parentResponse" to inputPesanBalasan.text.toString().trim(),
-            "parentId" to (auth.currentUser?.uid ?: "unknown"),
-            "respondedAt" to FieldValue.serverTimestamp()
-        )
-        submissionRef.update(updates as Map<String, Any>)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Pengajuan ditolak.", Toast.LENGTH_SHORT).show()
-                finish()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Gagal menolak: ${e.message}", Toast.LENGTH_LONG).show()
+                        tvCountApproved.text = approved.toString()
+                        tvCountRejected.text = rejected.toString()
+                        tvCountPending.text = pending.toString()
+                        tvCountNew.text = newCount.toString()
+                    }
             }
     }
 
-    private fun showDelayDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Tunda pengajuan")
-        builder.setMessage("Pilih berapa hari ingin menunda pengingat:")
-
-        // input number of days
-        val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        input.hint = "Jumlah hari (contoh: 3)"
-        builder.setView(input)
-
-        builder.setPositiveButton("Tunda") { d, _ ->
-            val days = input.text.toString().toIntOrNull() ?: 0
-            d.dismiss()
-            performDelay(days)
+    private fun updateStatusHeader(status: String) {
+        when (status.lowercase()) {
+            "approved" -> {
+                headerTitle.text = "✅ Disetujui Orang Tua"
+                headerTitle.setTextColor(getColor(R.color.green))
+            }
+            "rejected" -> {
+                headerTitle.text = "❌ Ditolak Orang Tua"
+                headerTitle.setTextColor(getColor(R.color.red))
+            }
+            else -> {
+                headerTitle.text = "⏰ Menunggu Persetujuan"
+                headerTitle.setTextColor(getColor(R.color.orange))
+            }
         }
-
-        builder.setNegativeButton("Batal") { d, _ -> d.dismiss() }
-        builder.show()
     }
 
-    private fun performDelay(days: Int) {
-        val subRef = firestore.collection("submissions").document(submissionId!!)
-        val remindAt = Timestamp(Date(System.currentTimeMillis() + (days.toLong() * 24L * 3600L * 1000L)))
-        val updates = hashMapOf<String, Any>(
-            "status" to "pending",
-            "parentResponse" to inputPesanBalasan.text.toString().trim(),
-            "remindAt" to remindAt,
-            "parentId" to (auth.currentUser?.uid ?: "unknown"),
-            "respondedAt" to FieldValue.serverTimestamp()
-        )
-        subRef.update(updates as Map<String, Any>).addOnSuccessListener {
-            Toast.makeText(this, "Pengajuan ditunda selama $days hari.", Toast.LENGTH_SHORT).show()
-            finish()
-        }.addOnFailureListener { e ->
-            Toast.makeText(this, "Gagal menunda pengajuan: ${e.message}", Toast.LENGTH_LONG).show()
+    private fun setupButtonListeners() {
+        btnSetujuPenuh.setOnClickListener { updateSubmissionStatus("approved") }
+        btnTolak.setOnClickListener { updateSubmissionStatus("rejected") }
+        btnTunda.setOnClickListener { updateSubmissionStatus("pending") }
+    }
+
+    private fun updateSubmissionStatus(status: String) {
+        if (childId.isNullOrEmpty() || submissionId.isNullOrEmpty()) return
+
+        val submissionRef = db.collection("submissions").document(submissionId!!)
+        val userRef = db.collection("users").document(childId!!)
+
+        db.runTransaction { tr ->
+            val doc = tr.get(submissionRef)
+            val currentStatus = doc.getString("status") ?: ""
+            val amount = doc.getLong("amount") ?: 0L
+
+            tr.update(submissionRef, "status", status)
+
+            if (status == "approved" && currentStatus != "approved") {
+                val curBal = tr.get(userRef).getLong("saldo") ?: tr.get(userRef).getLong("balance") ?: 0L
+                tr.update(userRef, "saldo", curBal + amount)
+            }
+        }.addOnSuccessListener {
+            Toast.makeText(this, "Status diperbarui: $status", Toast.LENGTH_SHORT).show()
+            updateStatusHeader(status)
+        }.addOnFailureListener {
+            Toast.makeText(this, "Gagal memperbarui status", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun formatCurrency(amount: Long): String {
+        val formatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(amount)
+        return formatted.replace("Rp", "Rp ").trim()
     }
 }
