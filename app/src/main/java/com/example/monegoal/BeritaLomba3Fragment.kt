@@ -1,59 +1,68 @@
 package com.example.monegoal
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.fragment.app.Fragment
 
 /**
- * A simple [Fragment] subclass.
- * Use the [BeritaLomba3Fragment.newInstance] factory method to
- * create an instance of this fragment.
+ * Fragment untuk menampilkan detail berita/kampanye Lomba 1: Samsung Innovation Campus.
+ * Konten (Teks dan Gambar) dimuat secara STATIS dari XML.
  */
 class BeritaLomba3Fragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    // Menghapus parameter dan newInstance yang tidak terpakai agar kode lebih bersih
+    // Jika Anda menggunakan NavArgs, bagian ini akan diubah.
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+        // Menggunakan layout fragment_berita_lomba1.
+        // CATATAN: Karena Anda menggunakan XML baru dengan context .BeritaLomba3Fragment,
+        // pastikan nama layout yang di-inflate di sini sudah sesuai dengan nama file XML Anda.
+        // Asumsi: Kita tetap menggunakan R.layout.fragment_berita_lomba1 jika nama file XML-nya itu.
         return inflater.inflate(R.layout.fragment_berita_lomba3, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BeritaLomba3Fragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BeritaLomba3Fragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // 1. Dapatkan referensi komponen UI
+        // btnBack digunakan untuk kembali ke halaman sebelumnya
+        val btnBack: ImageButton? = view.findViewById(R.id.btnBack)
+
+        // tvLinkCTA digunakan untuk membuka tautan pendaftaran
+        val tvLinkCTA: TextView? = view.findViewById(R.id.tvLinkCTA)
+
+        // Tautan tujuan (URL) statis untuk IDCamp 2023 (diperbarui)
+        val linkUrl = "https://idcamp.indosatooredoo.com/"
+
+        // 2. Implementasi Tombol Kembali
+        // Tombol kembali akan menutup Fragment saat ini dan kembali ke Fragment sebelumnya.
+        btnBack?.setOnClickListener {
+            // Menggunakan FragmentManager untuk kembali ke Fragment sebelumnya di Back Stack
+            parentFragmentManager.popBackStack()
+        }
+
+        // 3. Implementasi Tombol CTA (Membuka Tautan)
+        // Saat diklik, akan membuka URL di browser eksternal.
+        tvLinkCTA?.setOnClickListener {
+            try {
+                // Membuat Intent untuk melihat (ACTION_VIEW) URI
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl))
+                startActivity(intent)
+            } catch (e: Exception) {
+                // Log error jika ada masalah saat membuka tautan
+                android.util.Log.e("BeritaLomba3Fragment", "Error membuka tautan: ${e.message}")
             }
+        }
     }
+
+    // Menghapus fungsi newInstance dan parameter yang tidak terpakai
 }
