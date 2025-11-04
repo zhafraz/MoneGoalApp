@@ -184,22 +184,23 @@
                                 android:contentDescription="Festival Sains" />
 
                             <!-- TRENDING Tag -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="TRENDING"
-                                android:textColor="#000000"
-                                android:textSize="10sp"
-                                android:textStyle="bold"
-                                android:paddingStart="12dp"
-                                android:paddingEnd="12dp"
-                                android:paddingTop="4dp"
-                                android:paddingBottom="4dp"
-                                android:background="@drawable/bg_tag_green"
-                                android:layout_marginEnd="12dp"
-                                android:layout_marginTop="12dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+<!--                            <TextView-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="TRENDING"-->
+<!--                                android:textColor="#000000"-->
+<!--                                android:textSize="10sp"-->
+<!--                                android:textStyle="bold"-->
+<!--                                android:paddingStart="12dp"-->
+<!--                                android:paddingEnd="12dp"-->
+<!--                                android:paddingTop="4dp"-->
+<!--                                android:paddingBottom="4dp"-->
+<!--                                android:background="@drawable/bg_tag_green"-->
+<!--                                android:layout_marginEnd="12dp"-->
+<!--                                android:layout_marginTop="12dp"-->
+<!--                                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                                app:layout_constraintTop_toTopOf="parent" />-->
+
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
                         <!-- Details -->
@@ -212,19 +213,12 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Festival Sains SMA IT Nur Hidayah"
+                                android:text="Bagikan Informasi IDCamp 2023 dan Raih Hadiah Jutaan Rupiah!"
                                 android:textColor="#333333"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:layout_marginBottom="4dp"/>
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Festival sains terbesar se-Sukoharjo untuk memperkenalkan inovasi teknologi"
-                                android:textColor="#666666"
-                                android:textSize="14sp"
-                                android:layout_marginBottom="12dp"/>
 
                             <!-- Progress Bar -->
 <!--                            <LinearLayout-->
@@ -334,19 +328,13 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Proyek Penelitian Air Bersih"
+                                android:text="Samsung Innovation Campus Batch 7 2024/2025"
                                 android:textColor="#333333"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:layout_marginBottom="4dp"/>
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Filter air sederhana untuk daerah terpencil"
-                                android:textColor="#666666"
-                                android:textSize="14sp"
-                                android:layout_marginBottom="12dp"/>
+
 
                             <!-- Progress Bar -->
 <!--                            <LinearLayout-->
@@ -440,26 +428,11 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:scaleType="centerCrop"
-                                android:src="@drawable/idcamp"
+                                android:src="@drawable/FinanceLomba"
                                 android:contentDescription="Festival Sains" />
 
                             <!-- TRENDING Tag -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="TRENDING"
-                                android:textColor="#000000"
-                                android:textSize="10sp"
-                                android:textStyle="bold"
-                                android:paddingStart="12dp"
-                                android:paddingEnd="12dp"
-                                android:paddingTop="4dp"
-                                android:paddingBottom="4dp"
-                                android:background="@drawable/bg_tag_green"
-                                android:layout_marginEnd="12dp"
-                                android:layout_marginTop="12dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
                         <!-- Details -->
@@ -472,19 +445,13 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Festival Sains SMA IT Nur Hidayah"
+                                android:text="2025 Global Fintech Hackcelerator"
                                 android:textColor="#333333"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:layout_marginBottom="4dp"/>
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Festival sains terbesar se-Sukoharjo untuk memperkenalkan inovasi teknologi"
-                                android:textColor="#666666"
-                                android:textSize="14sp"
-                                android:layout_marginBottom="12dp"/>
+
 
                             <!-- Progress Bar -->
                             <!--                            <LinearLayout-->

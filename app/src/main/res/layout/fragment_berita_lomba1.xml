@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E0F7FA"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
+
+        <!-- ========== HEADER DENGAN TOMBOL BACK ========== -->
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_header_gradient"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp"
+            android:elevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Tombol Back -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="#FFFFFF">
+
+                    <ImageButton
+                        android:id="@+id/btnBack"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Kembali"
+                        android:padding="8dp"
+                        android:src="@drawable/outline_arrow_left_24"
+                        app:tint="#2196F3" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- Judul Halaman -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="40dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Berita"
+                    android:textColor="#004D40"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp">
+
+            <!-- Bagian 1: Tentang Aplikasi MoneGoal -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                android:padding="8dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Samsung Innovation Campus Batch 7 2024/2025"
+                        android:textColor="#004D40"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="#B2DFDB" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:src="@drawable/sic" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingExtra="4dp"
+                        android:text="Kamu akan diajak menguasai Prototyping IoT berbasis AI dalam 4 bulan penuh, khusus bagi pelajar SMA/SMK/MA dan mahasiswa—gratis tanpa biaya!"
+                        android:textColor="#333333"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Versi Aplikasi: 1.2.0 (Build 20241102)"
+                        android:textColor="#6A6A6A"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <!-- Bagian 3: Hubungi Kami/Dukungan -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="Informasi"
+                android:textColor="#004D40"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/HelpOptionItem"
+                android:textSize="14dp"
+                android:textColor="@color/black"
+                android:text="Melalui program ini, peserta akan belajar dari dasar hingga mampu menciptakan solusi teknologi yang bermanfaat bagi masyarakat. Selain pelatihan intensif, peserta juga berkesempatan memperoleh kit prototyping, sertifikat resmi, serta kesempatan untuk mengikuti kompetisi tingkat nasional dengan hadiah menarik di akhir program. Pendaftaran dibuka mulai 11 November hingga 23 Desember 2024, dan pelatihan akan dilaksanakan dari 6 Januari hingga 26 Mei 2025. Jangan lewatkan kesempatan untuk menjadi bagian dari generasi inovator digital bersama Samsung Innovation Campus!" />
+
+            <!-- Opsi 2: Kontak Email -->
+            <TextView
+                android:id="@+id/tvContactEmail"
+                style="@style/HelpOptionItem"
+                android:textSize="14dp"
+                android:paddingTop="10dp"
+                android:textColor="#00ffff"
+                android:drawableEnd="@drawable/outline_arrow_drop_up_24"
+                android:text="➡️ hacktiv8.com/projects/samsung-indonesia" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
