@@ -23,4 +23,7 @@
     <color name="gray_800">#424242</color>
     <color name="light_blue">#E3F2FD</color>
     <color name="card_default">#F0F9FF</color>
+    <color name="green">#4CAF50</color>
+    <color name="red">#F44336</color>
+    <color name="orange">#FF9800</color>
 </resources>

@@ -43,7 +43,7 @@ class HomeOrtuActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_home_ortu)
 
-        // safe edge-to-edge padding
+        // edge-to-edge padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -53,15 +53,13 @@ class HomeOrtuActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        bindViews()          // inisialisasi semua view
-        setupRecycler()      // setup adapter & recycler
-        setupNavigation()    // pasang listener setelah view di-bind
-
-        loadParentHomeData() // load data
+        bindViews()
+        setupRecycler()
+        setupNavigation()
+        loadParentHomeData()
     }
 
     private fun bindViews() {
-        // pastikan ID di layout sama persis dengan ini
         tvUserName = findViewById(R.id.tvUserName)
         tvUserRole = findViewById(R.id.tvUserRole)
         tvTotalBalance = findViewById(R.id.tvTotalChildBalance)
@@ -74,8 +72,10 @@ class HomeOrtuActivity : AppCompatActivity() {
 
     private fun setupRecycler() {
         adapter = SubmissionAdapter(submissionList) { submission ->
-            val intent = Intent(this, DetailAjuanAnakActivity::class.java)
-            intent.putExtra("submissionId", submission.id)
+            val intent = Intent(this, DetailAjuanAnakActivity::class.java).apply {
+                putExtra("submissionId", submission.id)
+                putExtra("childId", submission.childId)
+            }
             startActivity(intent)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -83,12 +83,6 @@ class HomeOrtuActivity : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
-
-        cardDetailPengajuan.setOnClickListener {
-            // buka activity detail (pastikan dideklarasikan di manifest)
-            startActivity(Intent(this, DetailAjuanAnakActivity::class.java))
-        }
-
         cardTopup.setOnClickListener {
             startActivity(Intent(this, TopupActivity::class.java))
         }
@@ -100,8 +94,7 @@ class HomeOrtuActivity : AppCompatActivity() {
     }
 
     private fun loadParentHomeData() {
-        val intentEmail = intent.getStringExtra("parentEmail")
-        val parentEmail = intentEmail ?: auth.currentUser?.email
+        val parentEmail = intent.getStringExtra("parentEmail") ?: auth.currentUser?.email
 
         if (parentEmail.isNullOrBlank()) {
             tvUserName.text = "Orang Tua"
@@ -115,7 +108,7 @@ class HomeOrtuActivity : AppCompatActivity() {
 
         val parentId = encodeEmailToId(parentEmail)
 
-        // ambil nama parent (jika ada)
+        // Ambil nama parent
         firestore.collection("parents").document(parentId)
             .get()
             .addOnSuccessListener { parentSnap ->
@@ -126,7 +119,7 @@ class HomeOrtuActivity : AppCompatActivity() {
                 tvUserName.text = parentEmail.substringBefore("@")
             }
 
-        // ambil anak-anak yang memiliki parentId di field "parents" (array)
+        // Ambil semua anak yang punya parentId ini
         firestore.collection("users")
             .whereArrayContains("parents", parentId)
             .get()
@@ -147,32 +140,16 @@ class HomeOrtuActivity : AppCompatActivity() {
                 if (childIds.isNotEmpty()) {
                     loadSubmissionsForChildren(childIds)
                 } else {
-                    tvNoSubmissions.visibility = View.VISIBLE
-                    recyclerView.visibility = View.GONE
-                    tvPendingCount.text = "0"
+                    showEmptyState()
                 }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Gagal memuat data anak: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                tvUserRole.text = "Pengelola Keluarga (0 Anak)"
-                tvTotalBalance.text = formatCurrency(0L)
-                tvPendingCount.text = "0"
-                tvNoSubmissions.visibility = View.VISIBLE
-                recyclerView.visibility = View.GONE
+                showEmptyState()
             }
     }
 
     private fun loadSubmissionsForChildren(childIds: List<String>) {
-        if (childIds.isEmpty()) {
-            tvNoSubmissions.visibility = View.VISIBLE
-            recyclerView.visibility = View.GONE
-            tvPendingCount.text = "0"
-            submissionList.clear()
-            adapter.updateData(submissionList)
-            return
-        }
-
-        // Firestore whereIn max 10 — ambil 10 pertama jika lebih banyak
         val queryIds = if (childIds.size > 10) childIds.take(10) else childIds
 
         firestore.collection("submissions")
@@ -183,30 +160,24 @@ class HomeOrtuActivity : AppCompatActivity() {
 
                 val filtered = snapshot.documents.filter { d ->
                     val status = d.getString("status") ?: ""
-                    status.equals("pending", ignoreCase = true) || status.equals("new", ignoreCase = true)
+                    status.equals("pending", true) || status.equals("new", true)
                 }
 
                 for (doc in filtered) {
-                    // safe ambil amount (Long), createdAt (timestamp atau long)
                     val amount = doc.getLong("amount") ?: 0L
-
-                    // handle createdAt: bisa berupa Timestamp atau Long tergantung penulisan di server
-                    val createdAtMillis: Long = when {
-                        doc.contains("createdAt") -> {
-                            val tsObj = doc.get("createdAt")
-                            when (tsObj) {
-                                is Timestamp -> tsObj.toDate().time
-                                is Long -> tsObj
-                                is Number -> tsObj.toLong()
-                                else -> System.currentTimeMillis()
-                            }
-                        }
+                    val createdAtMillis: Long = when (val ts = doc.get("createdAt")) {
+                        is Timestamp -> ts.toDate().time
+                        is Long -> ts
+                        is Number -> ts.toLong()
                         else -> System.currentTimeMillis()
                     }
+
+                    val childId = doc.getString("childId") ?: ""
 
                     submissionList.add(
                         Submission(
                             id = doc.id,
+                            childId = childId,
                             childName = doc.getString("childName") ?: "Anak",
                             title = doc.getString("title") ?: (doc.getString("category") ?: "Pengajuan"),
                             amount = amount,
@@ -221,14 +192,24 @@ class HomeOrtuActivity : AppCompatActivity() {
                 val pendingCount = submissionList.count {
                     it.status.equals("pending", true) || it.status.equals("new", true)
                 }
-
                 tvPendingCount.text = pendingCount.toString()
-                tvNoSubmissions.visibility = if (submissionList.isEmpty()) View.VISIBLE else View.GONE
-                recyclerView.visibility = if (submissionList.isEmpty()) View.GONE else View.VISIBLE
+
+                if (submissionList.isEmpty()) showEmptyState() else showRecycler()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Gagal memuat pengajuan: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                showEmptyState()
             }
+    }
+
+    private fun showEmptyState() {
+        tvNoSubmissions.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+    }
+
+    private fun showRecycler() {
+        tvNoSubmissions.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
     }
 
     private fun formatCurrency(amount: Long): String {
@@ -237,7 +218,6 @@ class HomeOrtuActivity : AppCompatActivity() {
     }
 
     private fun encodeEmailToId(email: String): String {
-        // gunakan encoding yang konsisten di seluruh app
         return email.replace("@", "_at_").replace(".", "_dot_")
     }
 }

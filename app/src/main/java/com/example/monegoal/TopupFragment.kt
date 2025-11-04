@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -26,7 +27,6 @@ class TopupFragment : Fragment() {
 
     private var selectedNominal: Int = 0
     private var currentSaldoAnak: Long = 0L
-    private var sumberDanaOrtu: Long = 100_000L // sementara dummy; nanti ambil dr akun ortu
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -35,7 +35,7 @@ class TopupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_topup, container, false) // layout XML kamu
+        val view = inflater.inflate(R.layout.fragment_topup, container, false)
         initViews(view)
         setupNominalCards(view)
         setupCustomInput()
@@ -58,7 +58,10 @@ class TopupFragment : Fragment() {
             .addOnSuccessListener { doc ->
                 if (doc.exists()) {
                     val nama = doc.getString("name") ?: "Pengguna"
-                    val saldo = doc.getLong("balance") ?: 0L
+                    val saldo = doc.getLong("saldoAnak")
+                        ?: doc.getLong("saldo")
+                        ?: doc.getLong("balance")
+                        ?: 0L
 
                     tvUserNameTopup.text = nama
                     currentSaldoAnak = saldo
@@ -98,7 +101,7 @@ class TopupFragment : Fragment() {
     private fun highlightSelectedCard(selected: CardView, allCards: List<CardView>) {
         allCards.forEach { card ->
             val colorRes = if (card == selected) R.color.light_blue else R.color.card_default
-            card.setCardBackgroundColor(resources.getColor(colorRes, null))
+            card.setCardBackgroundColor(ContextCompat.getColor(requireContext(), colorRes))
         }
     }
 
@@ -122,49 +125,36 @@ class TopupFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // cek sumber dana (dummy) harus >= topup
-            if (sumberDanaOrtu < selectedNominal) {
-                Toast.makeText(requireContext(), "Saldo sumber dana tidak mencukupi!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            prosesTopupAtomic(selectedNominal.toLong())
+            prosesTopupAnak(selectedNominal.toLong())
         }
     }
 
-    /**
-     * Gunakan update atomic dengan FieldValue.increment agar aman concurrent.
-     * - menambah balance anak
-     * - mengurangi sumber dana (di sini hanya dummy local, tapi contoh operasi di Firestore disediakan)
-     */
-    private fun prosesTopupAtomic(amount: Long) {
+    private fun prosesTopupAnak(amount: Long) {
         val userId = auth.currentUser?.uid ?: return
-
         val userRef = db.collection("users").document(userId)
 
-        // 1) update balance anak secara atomic
-        userRef.update("balance", FieldValue.increment(amount))
+        userRef.update("saldoAnak", FieldValue.increment(amount))
             .addOnSuccessListener {
-                // jika kamu juga menyimpan transaksi/history:
+                // tambahkan transaksi pemasukan
                 val tx = hashMapOf(
-                    "type" to "topup",
+                    "type" to "pemasukan",
+                    "category" to "topup",
                     "amount" to amount,
                     "timestamp" to FieldValue.serverTimestamp(),
-                    "source" to "rekening_orangtua_dummy"
+                    "note" to "Topup via fragment anak"
                 )
-                userRef.collection("transactions").add(tx) // best-effort, tidak memblokir UI
+                userRef.collection("transactions").add(tx)
 
-                // kurangi sumber dana lokal (jika nanti di parent koleksi, lakukan update di koleksi parent)
-                sumberDanaOrtu -= amount
-                // refresh UI saldo anak dari Firestore (atau kita menambah variabel lokal)
-                // ambil saldo terbaru agar UI sinkron
+                // refresh UI
                 userRef.get().addOnSuccessListener { refreshed ->
-                    currentSaldoAnak = (refreshed.getLong("balance") ?: 0L)
+                    currentSaldoAnak = refreshed.getLong("saldoAnak")
+                        ?: refreshed.getLong("saldo")
+                                ?: refreshed.getLong("balance")
+                                ?: (currentSaldoAnak + amount)
                     updateSaldoText()
                     showSuccessDialog(amount)
                     resetNominal()
                 }.addOnFailureListener {
-                    // meskipun gagal fetch, tetap tunjukkan sukses (saldo sudah diincrement di server)
                     currentSaldoAnak += amount
                     updateSaldoText()
                     showSuccessDialog(amount)
@@ -177,12 +167,12 @@ class TopupFragment : Fragment() {
     }
 
     private fun updateNominalDisplay() {
-        val formatted = NumberFormat.getCurrencyInstance(Locale("in", "ID")).format(selectedNominal)
+        val formatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(selectedNominal)
         tvNominalDisplay.text = formatted.replace(",00", "")
     }
 
     private fun updateSaldoText() {
-        val formattedSaldo = NumberFormat.getCurrencyInstance(Locale("in", "ID")).format(currentSaldoAnak)
+        val formattedSaldo = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(currentSaldoAnak)
         tvSaldo.text = "Saldo: ${formattedSaldo.replace(",00", "")}"
     }
 
@@ -193,10 +183,10 @@ class TopupFragment : Fragment() {
     }
 
     private fun showSuccessDialog(amount: Long) {
-        val formatted = NumberFormat.getCurrencyInstance(Locale("in", "ID")).format(amount).replace(",00", "")
+        val formatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(amount).replace(",00", "")
         AlertDialog.Builder(requireContext())
             .setTitle("Top-up Berhasil 🎉")
-            .setMessage("Anda berhasil top-up sejumlah $formatted.\n\nSaldo telah ditambahkan ke akun anak.")
+            .setMessage("Anda berhasil menambahkan $formatted ke saldo akun.")
             .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             .show()
     }
