@@ -1,7 +1,6 @@
 package com.example.monegoal
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,11 +24,12 @@ class TopupActivity : AppCompatActivity() {
 
     private var selectedNominal: Int = 0
     private var currentSaldoOrtu: Long = 0L
+    private var currentSaldoChild: Long = 0L
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // IMPORTANT: TopupActivity harus dipanggil dengan extra "childId" (UID anak)
+    // Bisa diberikan via intent (dari HomeOrtuActivity)
     private var childId: String? = null
     private var childName: String? = null
 
@@ -44,7 +44,47 @@ class TopupActivity : AppCompatActivity() {
         setupNominalCards()
         setupCustomInput()
         setupBtnLanjut()
+
+        // selalu muat saldo orang tua (dipakai untuk validasi topup)
         loadSaldoOrtu()
+
+        // Jika childId tidak ada — ambil daftar anak terhubung dan minta pilihan.
+        if (childId.isNullOrBlank()) {
+            fetchChildrenForParent { children ->
+                when {
+                    children.isEmpty() -> {
+                        Toast.makeText(this, "Tidak ada akun anak terhubung. Pilih akun anak lewat profil.", Toast.LENGTH_LONG).show()
+                        // jika tidak ada anak, biarkan tvUserNameTopup menampilkan nama orang tua (sudah di-set oleh loadSaldoOrtu)
+                    }
+                    children.size == 1 -> {
+                        val (id, name) = children[0]
+                        childId = id
+                        childName = name
+                        tvUserNameTopup.text = "Top-up: ${childName ?: "Anak"}"
+                        loadChildBalance(childId!!)
+                    }
+                    else -> {
+                        // minta pilih anak lewat dialog
+                        val names = children.map { it.second.ifBlank { it.first } }.toTypedArray()
+                        AlertDialog.Builder(this)
+                            .setTitle("Pilih anak untuk top-up")
+                            .setItems(names) { _, which ->
+                                val (id, name) = children[which]
+                                childId = id
+                                childName = name
+                                tvUserNameTopup.text = "Top-up: ${childName ?: "Anak"}"
+                                loadChildBalance(childId!!)
+                            }
+                            .setCancelable(false)
+                            .show()
+                    }
+                }
+            }
+        } else {
+            // sudah ada childId dari intent
+            tvUserNameTopup.text = "Top-up: ${childName ?: "Anak"}"
+            loadChildBalance(childId!!)
+        }
     }
 
     private fun initViews() {
@@ -55,30 +95,76 @@ class TopupActivity : AppCompatActivity() {
         tvSaldo = findViewById(R.id.tvSaldo)
     }
 
+    /**
+     * Muat saldo orang tua (dipakai untuk validasi bahwa orang tua punya cukup uang).
+     * Tidak mengubah tampilan saldo anak bila child dipilih — gunakan loadChildBalance untuk itu.
+     */
     private fun loadSaldoOrtu() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).get()
             .addOnSuccessListener { doc ->
                 if (doc.exists()) {
                     val namaOrtu = doc.getString("name") ?: "Orang Tua"
-                    // fallback chain: saldoOrtu -> saldo -> balance
                     val saldoOrtu = doc.getLong("saldoOrtu")
                         ?: doc.getLong("saldo")
                         ?: doc.getLong("balance")
                         ?: 0L
 
-                    tvUserNameTopup.text = namaOrtu
+                    // jika belum ada child yang dipilih, tampilkan nama orang tua
+                    if (childName.isNullOrBlank()) {
+                        tvUserNameTopup.text = namaOrtu
+                    }
                     currentSaldoOrtu = saldoOrtu
-                    updateSaldoText()
+
+                    // only update display if no child selected — otherwise child saldo has priority
+                    if (childId.isNullOrBlank()) {
+                        updateSaldoText()
+                    }
                 } else {
-                    tvUserNameTopup.text = "Orang Tua"
+                    if (childName.isNullOrBlank()) tvUserNameTopup.text = "Orang Tua"
                     currentSaldoOrtu = 0L
-                    updateSaldoText()
+                    if (childId.isNullOrBlank()) updateSaldoText()
                 }
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Gagal memuat data pengguna", Toast.LENGTH_SHORT).show()
-                tvUserNameTopup.text = "Orang Tua"
+                if (childName.isNullOrBlank()) tvUserNameTopup.text = "Orang Tua"
+            }
+    }
+
+    /**
+     * Muat saldo anak tertentu dan tampilkan di tvSaldo.
+     * Jika dokumen anak tidak ditemukan, fallback menampilkan saldo orang tua (jika ada).
+     */
+    private fun loadChildBalance(childUid: String) {
+        db.collection("users").document(childUid).get()
+            .addOnSuccessListener { doc ->
+                if (doc != null && doc.exists()) {
+                    val name = doc.getString("name") ?: "Anak"
+                    childName = name
+                    // simpan saldo anak
+                    currentSaldoChild = doc.getLong("saldoAnak")
+                        ?: doc.getLong("saldo")
+                                ?: doc.getLong("balance")
+                                ?: 0L
+
+                    // tampilkan label yang jelas: Saldo Anak
+                    tvSaldo.text = "Saldo anak: ${formatCurrency(currentSaldoChild)}"
+                    tvUserNameTopup.text = "Top-up: ${childName ?: "Anak"}"
+                } else {
+                    // fallback
+                    currentSaldoChild = 0L
+                    // jika parent data tersedia, tampilkan parent saldo
+                    if (currentSaldoOrtu > 0L) {
+                        updateSaldoText()
+                    } else {
+                        tvSaldo.text = "Saldo: ${formatCurrency(0L)}"
+                    }
+                }
+            }
+            .addOnFailureListener {
+                currentSaldoChild = 0L
+                if (currentSaldoOrtu > 0L) updateSaldoText() else tvSaldo.text = "Saldo: ${formatCurrency(0L)}"
             }
     }
 
@@ -125,7 +211,7 @@ class TopupActivity : AppCompatActivity() {
     private fun setupBtnLanjut() {
         btnLanjut.setOnClickListener {
             if (childId.isNullOrBlank()) {
-                Toast.makeText(this, "Child ID tidak ditemukan. Pilih anak terlebih dahulu.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Pilih anak terlebih dahulu.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
@@ -147,17 +233,18 @@ class TopupActivity : AppCompatActivity() {
      * Transaksi atomik:
      * - kurangi saldoOrtu pada dokumen orang tua (current user)
      * - tambahkan saldoAnak pada dokumen anak (childId)
-     * - catat transaksi di masing2 subcollection transactions
+     * - catat transaksi di masing2 subcollection transactions (setelah runTransaction sukses)
      */
     private fun prosesTopupAtomic(amount: Long, childUid: String) {
         val parentUid = auth.currentUser?.uid ?: return
         val parentRef = db.collection("users").document(parentUid)
         val childRef = db.collection("users").document(childUid)
 
-        // gunakan runTransaction agar both updates atomic
         db.runTransaction { tx ->
-            // ambil current parent saldo (fallback)
+            // baca kedua dokumen dulu (Firestore transaction require reads sebelum updates)
             val parentSnap = tx.get(parentRef)
+            val childSnap = tx.get(childRef)
+
             val parentSaldoOrtu = parentSnap.getLong("saldoOrtu")
                 ?: parentSnap.getLong("saldo")
                 ?: parentSnap.getLong("balance")
@@ -167,44 +254,25 @@ class TopupActivity : AppCompatActivity() {
                 throw Exception("Saldo ortu tidak mencukupi")
             }
 
-            // ambil current child saldo
-            val childSnap = tx.get(childRef)
             val childSaldoAnak = childSnap.getLong("saldoAnak")
                 ?: childSnap.getLong("saldo")
                 ?: childSnap.getLong("balance")
                 ?: 0L
 
-            // update nilai
+            // lakukan update di dalam transaksi
             tx.update(parentRef, "saldoOrtu", parentSaldoOrtu - amount)
-            // juga update legacy field 'saldo' for backward compatibility (optional)
-            tx.update(parentRef, "saldo", (parentSnap.getLong("saldo") ?: parentSaldoOrtu) - amount)
+            // update legacy field 'saldo' jika ada (agar kompatibel)
+            val parentLegacySaldo = parentSnap.getLong("saldo") ?: parentSaldoOrtu
+            tx.update(parentRef, "saldo", parentLegacySaldo - amount)
 
             tx.update(childRef, "saldoAnak", childSaldoAnak + amount)
-            tx.update(childRef, "saldo", (childSnap.getLong("saldo") ?: childSaldoAnak) + amount)
+            val childLegacySaldo = childSnap.getLong("saldo") ?: childSaldoAnak
+            tx.update(childRef, "saldo", childLegacySaldo + amount)
 
-            // simpan transaksi (best-effort: simpan doc langsung di subcollection dengan serverTimestamp)
-            val parentTx = hashMapOf(
-                "type" to "pengeluaran",
-                "category" to "topup",
-                "amount" to amount,
-                "timestamp" to FieldValue.serverTimestamp(),
-                "note" to "Topup ke anak ${childUid}"
-            )
-            val childTx = hashMapOf(
-                "type" to "pemasukan",
-                "category" to "topup",
-                "amount" to amount,
-                "timestamp" to FieldValue.serverTimestamp(),
-                "note" to "Topup dari orang tua ${parentUid}"
-            )
-
-            // jangan gunakan tx.set() untuk subcollections (tidak memungkinkan per rules) — gunakan add setelah transaksi berhasil.
-            // Namun Firestore transaction supports set on any document; kita lebih aman menambahkan after success.
-            // Return map just to satisfy runTransaction lambda (value unused)
+            // return null (nilai tidak dipakai)
             null
         }.addOnSuccessListener {
-            // setelah sukses transaction, kita menambahkan dokumen transaksi (non-transactional)
-            // parent transaction doc:
+            // tambah transaksi non-transactional (best-effort)
             val parentTx = hashMapOf(
                 "type" to "pengeluaran",
                 "category" to "topup",
@@ -230,7 +298,9 @@ class TopupActivity : AppCompatActivity() {
                         ?: refreshed.getLong("saldo")
                                 ?: refreshed.getLong("balance")
                                 ?: 0L
-                    updateSaldoText()
+                    // jika tidak ada child dipilih, tampilkan parent saldo; kalau child ada, muat ulang anak
+                    if (childId.isNullOrBlank()) updateSaldoText()
+                    else loadChildBalance(childId!!)
                 }
 
             showSuccessDialog(amount)
@@ -245,9 +315,21 @@ class TopupActivity : AppCompatActivity() {
         tvNominalDisplay.text = formatted.replace(",00", "")
     }
 
+    /**
+     * Update tampilan tvSaldo.
+     * Jika childId ada -> tampilkan saldo anak. Jika tidak -> tampilkan saldo orang tua.
+     */
     private fun updateSaldoText() {
-        val formattedSaldo = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(currentSaldoOrtu)
-        tvSaldo.text = "Saldo: ${formattedSaldo.replace(",00", "")}"
+        if (!childId.isNullOrBlank()) {
+            // tampilkan saldo child (jika sudah dimuat), jika belum dimuat tampilkan "memuat..."
+            if (currentSaldoChild >= 0L) {
+                tvSaldo.text = "Saldo anak: ${formatCurrency(currentSaldoChild)}"
+            } else {
+                tvSaldo.text = "Saldo anak: Memuat..."
+            }
+        } else {
+            tvSaldo.text = "Saldo: ${formatCurrency(currentSaldoOrtu)}"
+        }
     }
 
     private fun resetNominal() {
@@ -262,7 +344,72 @@ class TopupActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(title)
             .setMessage("Anda berhasil top-up sejumlah $formatted ke akun anak.")
-            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                // selesai, kembalikan RESULT_OK jika dipanggil dari parent activity
+                setResult(RESULT_OK)
+                finish()
+            }
             .show()
+    }
+
+    /**
+     * Cari anak-anak yang terhubung dengan parent saat ini.
+     * Mengembalikan list Pair(childId, childName).
+     */
+    private fun fetchChildrenForParent(callback: (List<Pair<String, String>>) -> Unit) {
+        val parentEmail = auth.currentUser?.email
+        val parentUid = auth.currentUser?.uid
+
+        if (parentEmail.isNullOrBlank() && parentUid.isNullOrBlank()) {
+            callback(emptyList())
+            return
+        }
+
+        val candidateParents = mutableListOf<String>()
+        parentUid?.let { candidateParents.add(it) }
+        parentEmail?.let {
+            // encoding yang dipakai di register: replace(".", "_").replace("@","_at_")
+            candidateParents.add(it.replace(".", "_").replace("@", "_at_"))
+            candidateParents.add(it)
+            // legacy style
+            candidateParents.add(it.replace("@", "_at_").replace(".", "_dot_"))
+        }
+
+        val toTry = candidateParents.filter { it.isNotBlank() }.distinct()
+        if (toTry.isEmpty()) {
+            callback(emptyList())
+            return
+        }
+
+        val collected = mutableMapOf<String, String>() // id -> name
+        var remaining = toTry.size
+
+        for (p in toTry) {
+            db.collection("users")
+                .whereArrayContains("parents", p)
+                .get()
+                .addOnSuccessListener { snap ->
+                    for (d in snap.documents) {
+                        val name = d.getString("name") ?: d.id
+                        collected[d.id] = name
+                    }
+                    remaining--
+                    if (remaining <= 0) {
+                        callback(collected.map { it.key to it.value })
+                    }
+                }
+                .addOnFailureListener {
+                    remaining--
+                    if (remaining <= 0) {
+                        callback(collected.map { it.key to it.value })
+                    }
+                }
+        }
+    }
+
+    private fun formatCurrency(amount: Long): String {
+        val formatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(amount)
+        return formatted.replace("Rp", "Rp ").trim()
     }
 }

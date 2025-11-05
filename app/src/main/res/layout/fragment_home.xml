@@ -37,7 +37,6 @@
                 android:id="@+id/btnNotification"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/notif"
                 android:contentDescription="Notifikasi"
                 android:padding="8dp"
                 android:scaleType="fitCenter"

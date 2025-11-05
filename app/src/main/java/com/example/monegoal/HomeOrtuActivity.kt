@@ -1,9 +1,11 @@
 package com.example.monegoal
 
+import android.app.AlertDialog
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -15,10 +17,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.monegoal.adapter.SubmissionAdapter
 import com.example.monegoal.models.Submission
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.min
@@ -37,17 +38,18 @@ class HomeOrtuActivity : AppCompatActivity() {
 
     private lateinit var cardDetailPengajuan: CardView
     private lateinit var cardTopup: CardView
+    private lateinit var btnLogout: ImageView
 
     private lateinit var adapter: SubmissionAdapter
     private val submissionList = mutableListOf<Submission>()
 
     // launcher untuk membuka DetailAjuanAnakActivity dan refresh saat RESULT_OK
-    private val detailLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            // reload antrian (pengajuan terbaru/terlama)
-            loadParentHomeData()
+    private val detailLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                loadParentHomeData()
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,15 +66,14 @@ class HomeOrtuActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        bindViews()          // inisialisasi semua view
-        setupRecycler()      // setup adapter & recycler
-        setupNavigation()    // pasang listener setelah view di-bind
+        bindViews()
+        setupRecycler()
+        setupNavigation()
 
-        loadParentHomeData() // load data
+        loadParentHomeData()
     }
 
     private fun bindViews() {
-        // pastikan ID di layout sama persis dengan ini
         tvUserName = findViewById(R.id.tvUserName)
         tvUserRole = findViewById(R.id.tvUserRole)
         tvTotalBalance = findViewById(R.id.tvTotalChildBalance)
@@ -81,6 +82,8 @@ class HomeOrtuActivity : AppCompatActivity() {
         tvNoSubmissions = findViewById(R.id.tvNoSubmissions)
         cardDetailPengajuan = findViewById(R.id.cardSetTask)
         cardTopup = findViewById(R.id.cardTopup)
+        // perbaikan: gunakan findViewById di Activity, bukan `view`
+        btnLogout = findViewById(R.id.btnLogOut)
     }
 
     private fun setupRecycler() {
@@ -89,7 +92,6 @@ class HomeOrtuActivity : AppCompatActivity() {
                 putExtra("submissionId", submission.id)
                 putExtra("childId", submission.childId)
             }
-            // gunakan launcher agar kita dapat refresh ketika detail selesai (RESULT_OK)
             detailLauncher.launch(intent)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -98,8 +100,6 @@ class HomeOrtuActivity : AppCompatActivity() {
 
     private fun setupNavigation() {
         cardDetailPengajuan.setOnClickListener {
-            // buka activity detail (tampilkan pengajuan terlama jika ada)
-            // kalau mau buka oldest submission via intent, bisa ambil dari submissionList[0] jika ada
             if (submissionList.isNotEmpty()) {
                 val s = submissionList.minByOrNull { it.createdAt }!!
                 val intent = Intent(this, DetailAjuanAnakActivity::class.java).apply {
@@ -108,13 +108,64 @@ class HomeOrtuActivity : AppCompatActivity() {
                 }
                 detailLauncher.launch(intent)
             } else {
-                // buka halaman detail kosong
                 startActivity(Intent(this, DetailAjuanAnakActivity::class.java))
             }
         }
 
         cardTopup.setOnClickListener {
-            startActivity(Intent(this, TopupActivity::class.java))
+            // saat cardTopup diklik, ambil daftar anak dulu lalu buka TopupActivity sesuai pilihan
+            fetchChildrenForParent { children ->
+                when {
+                    children.isEmpty() -> {
+                        Toast.makeText(
+                            this,
+                            "Tidak ada akun anak terhubung. Anda dapat menambah anak di profil.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        startActivity(Intent(this, TopupActivity::class.java))
+                    }
+                    children.size == 1 -> {
+                        val (id, name) = children[0]
+                        val i = Intent(this, TopupActivity::class.java).apply {
+                            putExtra("childId", id)
+                            putExtra("childName", name)
+                        }
+                        startActivity(i)
+                    }
+                    else -> {
+                        val names = children.map { it.second.ifBlank { it.first } }.toTypedArray()
+                        AlertDialog.Builder(this)
+                            .setTitle("Pilih anak untuk top-up")
+                            .setItems(names) { _, which ->
+                                val (id, name) = children[which]
+                                val i = Intent(this, TopupActivity::class.java).apply {
+                                    putExtra("childId", id)
+                                    putExtra("childName", name)
+                                }
+                                startActivity(i)
+                            }
+                            .setNegativeButton("Batal", null)
+                            .show()
+                    }
+                }
+            }
+        }
+
+        // pasang listener logout di sini (di dalam method, setelah findViewById)
+        btnLogout.setOnClickListener {
+            // jika ingin konfirmasi sebelum logout
+            AlertDialog.Builder(this)
+                .setTitle("Keluar")
+                .setMessage("Apakah Anda yakin ingin keluar?")
+                .setPositiveButton("Ya") { _, _ ->
+                    auth.signOut()
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Batal", null)
+                .show()
         }
     }
 
@@ -123,6 +174,12 @@ class HomeOrtuActivity : AppCompatActivity() {
         loadParentHomeData()
     }
 
+    /**
+     * Load summary parent home:
+     * - tampilkan nama parent (jika ada)
+     * - hit semua anak yang terhubung (gabungan beberapa query)
+     * - hit submissions untuk anak-anak tersebut
+     */
     private fun loadParentHomeData() {
         val intentEmail = intent.getStringExtra("parentEmail")
         val parentEmail = intentEmail ?: auth.currentUser?.email
@@ -139,7 +196,7 @@ class HomeOrtuActivity : AppCompatActivity() {
 
         val parentId = encodeEmailToId(parentEmail)
 
-        // ambil nama parent (jika ada)
+        // ambil nama parent jika ada di collection 'parents'
         firestore.collection("parents").document(parentId)
             .get()
             .addOnSuccessListener { parentSnap ->
@@ -150,54 +207,103 @@ class HomeOrtuActivity : AppCompatActivity() {
                 tvUserName.text = parentEmail.substringBefore("@")
             }
 
-        // Ambil semua anak yang memiliki parentId atau parentEmail di field "parents" (array)
-        val childDocs = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+        // Ambil daftar anak: gabungkan hasil dari beberapa bentuk query
+        val childDocs = mutableMapOf<String, DocumentSnapshot>()
 
-        // 1) whereArrayContains encoded parentId
-        firestore.collection("users")
-            .whereArrayContains("parents", parentId)
-            .get()
-            .addOnSuccessListener { snap1 ->
-                for (d in snap1.documents) childDocs[d.id] = d
+        val parentUid = auth.currentUser?.uid
+        val candidateParents = mutableListOf<String>().apply {
+            parentUid?.let { add(it) }
+            add(parentId) // encoded with RegisterActivity style
+            add(parentEmail)
+            add(parentEmail.replace("@", "_at_").replace(".", "_dot_")) // legacy variant
+        }.filter { it.isNotBlank() }.distinct()
 
-                // 2) whereArrayContains plain parent email
-                firestore.collection("users")
-                    .whereArrayContains("parents", parentEmail)
-                    .get()
-                    .addOnSuccessListener { snap2 ->
-                        for (d in snap2.documents) childDocs[d.id] = d
-
-                        // selesai gabung hasil
-                        handleChildrenDocs(childDocs.values.toList())
-                    }
-                    .addOnFailureListener {
-                        // tetap handle hasil dari query pertama
-                        handleChildrenDocs(childDocs.values.toList())
-                    }
+        fun runNextQuery(index: Int) {
+            if (index >= candidateParents.size) {
+                handleChildrenDocs(childDocs.values.toList())
+                return
             }
-            .addOnFailureListener {
-                // kalau query pertama gagal, coba langsung berdasarkan email (fallback)
-                firestore.collection("users")
-                    .whereArrayContains("parents", parentEmail)
-                    .get()
-                    .addOnSuccessListener { snap2 ->
-                        for (d in snap2.documents) childDocs[d.id] = d
-                        handleChildrenDocs(childDocs.values.toList())
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Gagal memuat data anak", Toast.LENGTH_SHORT).show()
-                        showEmptyState()
-                    }
-            }
+            val v = candidateParents[index]
+            firestore.collection("users")
+                .whereArrayContains("parents", v)
+                .get()
+                .addOnSuccessListener { snap ->
+                    for (d in snap.documents) childDocs[d.id] = d
+                    runNextQuery(index + 1)
+                }
+                .addOnFailureListener {
+                    runNextQuery(index + 1)
+                }
+        }
+
+        runNextQuery(0)
     }
 
-    private fun handleChildrenDocs(docs: List<com.google.firebase.firestore.DocumentSnapshot>) {
+    /**
+     * Mengembalikan daftar (childId, childName) melalui callback.
+     * Query mencoba beberapa kemungkinan parent identifier:
+     * - UID parent (jika ada)
+     * - encoded email (RegisterActivity style: replace(".", "_").replace("@", "_at_"))
+     * - plain email
+     * - legacy encoded (replace(".", "_dot_")) — bila ada
+     */
+    private fun fetchChildrenForParent(callback: (List<Pair<String, String>>) -> Unit) {
+        val parentEmail = intent.getStringExtra("parentEmail") ?: auth.currentUser?.email
+        val parentUid = auth.currentUser?.uid
+
+        if (parentEmail.isNullOrBlank() && parentUid.isNullOrBlank()) {
+            callback(emptyList())
+            return
+        }
+
+        val candidateParents = mutableListOf<String>()
+        parentUid?.let { candidateParents.add(it) }
+        parentEmail?.let {
+            candidateParents.add(encodeEmailToId(it)) // main encoding: "." -> "_" ; "@" -> "_at_"
+            candidateParents.add(it) // raw email
+            candidateParents.add(it.replace("@", "_at_").replace(".", "_dot_")) // legacy
+        }
+
+        val toTry = candidateParents.filter { it.isNotBlank() }.distinct()
+        if (toTry.isEmpty()) {
+            callback(emptyList())
+            return
+        }
+
+        val collected = mutableMapOf<String, String>() // id -> name
+        var remaining = toTry.size
+
+        for (p in toTry) {
+            firestore.collection("users")
+                .whereArrayContains("parents", p)
+                .get()
+                .addOnSuccessListener { snap ->
+                    for (d in snap.documents) {
+                        val name = d.getString("name") ?: d.id
+                        collected[d.id] = name
+                    }
+                    remaining--
+                    if (remaining <= 0) {
+                        val result = collected.map { it.key to it.value }
+                        callback(result)
+                    }
+                }
+                .addOnFailureListener {
+                    remaining--
+                    if (remaining <= 0) {
+                        val result = collected.map { it.key to it.value }
+                        callback(result)
+                    }
+                }
+        }
+    }
+
+    private fun handleChildrenDocs(docs: List<DocumentSnapshot>) {
         val totalChildren = docs.size
         var totalBalance = 0L
         val childIds = mutableListOf<String>()
 
         for (doc in docs) {
-            // prioritas field untuk saldo anak: saldoAnak -> saldo -> balance (legacy)
             val bal = doc.getLong("saldoAnak") ?: doc.getLong("saldo") ?: doc.getLong("balance") ?: 0L
             totalBalance += bal
             childIds.add(doc.id)
@@ -233,16 +339,13 @@ class HomeOrtuActivity : AppCompatActivity() {
 
         submissionList.clear()
 
-        // chunk list karena whereIn maksimal 10
         val idChunks = chunkList(childIds, 10)
-
         var pendingQueries = 0
         val collectedDocs = mutableListOf<com.google.firebase.firestore.DocumentSnapshot>()
 
         fun onQueryDone() {
             pendingQueries--
             if (pendingQueries <= 0) {
-                // gabungkan, unique by id, filter status pending, lalu urutkan by createdAt ascending (terlama dulu)
                 val distinct = collectedDocs
                     .distinctBy { it.id }
                     .filter { doc ->
@@ -250,15 +353,12 @@ class HomeOrtuActivity : AppCompatActivity() {
                         raw.contains("pending") || raw.contains("new") || raw.contains("menunggu")
                     }
                     .sortedBy { doc ->
-                        // ambil timestamp/createdAt/tanggal dalam millis, fallback ke now
                         val ts = doc.get("createdAt") ?: doc.get("tanggal") ?: doc.get("date") ?: doc.get("created_at")
                         when (ts) {
                             is com.google.firebase.Timestamp -> ts.toDate().time
-                            is com.google.firebase.Timestamp -> ts.toDate().time
                             is java.util.Date -> ts.time
                             is Number -> ts.toLong()
-                            is Long -> ts
-                            else -> Long.MAX_VALUE // kalau ga ada, taruh di akhir
+                            else -> Long.MAX_VALUE
                         }
                     }
 
@@ -385,8 +485,11 @@ class HomeOrtuActivity : AppCompatActivity() {
         return formatted.replace("Rp", "Rp ").trim()
     }
 
+    /**
+     * Encoding email yang konsisten dengan RegisterActivity:
+     * register -> email.replace(".", "_").replace("@", "_at_")
+     */
     private fun encodeEmailToId(email: String): String {
-        // menggunakan encoding yang konsisten
-        return email.replace("@", "_at_").replace(".", "_dot_")
+        return email.replace(".", "_").replace("@", "_at_")
     }
 }

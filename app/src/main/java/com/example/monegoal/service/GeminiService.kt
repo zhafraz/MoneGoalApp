@@ -13,8 +13,6 @@ import java.util.concurrent.TimeUnit
 import android.util.Log
 
 object GeminiService {
-
-    // NOTE: Jangan lupa pindahkan API KEY ini ke tempat aman sebelum rilis
     private const val API_KEY = "AIzaSyANJKbF-4wGLnXgkzAPeAt8j3k_pVSK3ck"
     private val gson = Gson()
     private const val TAG = "GeminiService"

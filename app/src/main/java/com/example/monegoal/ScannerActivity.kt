@@ -18,10 +18,12 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageProxy
 import org.json.JSONObject
 import java.util.concurrent.Executors
 import android.os.Handler
@@ -42,7 +44,10 @@ class ScannerActivity : AppCompatActivity() {
     private var isProcessing = false
 
     private val db = FirebaseFirestore.getInstance()
-    private var saldoUser: Long = 0L
+
+    // cache optional (untuk UI); pengecekan kritis memakai direct .get()
+    private var cachedSaldoAnak: Long = 0L
+    private var cachedApprovedLimit: Long = 0L
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -63,13 +68,12 @@ class ScannerActivity : AppCompatActivity() {
 
         btnBack.setOnClickListener { finish() }
         btnFlash.setOnClickListener {
-            // Toggle torch sekejap (atau kamu bisa implement toggle state)
             camera?.cameraControl?.enableTorch(true)
             previewView.postDelayed({ camera?.cameraControl?.enableTorch(false) }, 1500)
         }
 
         checkCameraPermission()
-        loadSaldoUser()
+        loadCache() // isi cache opsional
     }
 
     private fun checkCameraPermission() {
@@ -81,14 +85,25 @@ class ScannerActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadSaldoUser() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        db.collection("users").document(userId)
+    /**
+     * Isi cache awal (opsional) agar UI bisa tunjukkan nilai; pengecekan kritis tetap pakai .get() real-time.
+     */
+    private fun loadCache() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        db.collection("users").document(uid)
             .get()
             .addOnSuccessListener { doc ->
-                // field bisa "balance" atau "saldo"
-                saldoUser = doc.getLong("balance") ?: doc.getLong("saldo") ?: 0L
-                Log.d("QR", "Saldo user = $saldoUser")
+                cachedSaldoAnak = doc.getLong("saldoAnak") ?: doc.getLong("balance") ?: doc.getLong("saldo") ?: 0L
+                cachedApprovedLimit = when (val v = doc.get("approvedLimit")) {
+                    is Number -> v.toLong()
+                    is String -> v.toString().toLongOrNull() ?: 0L
+                    else -> 0L
+                }
+                Log.d("QR", "cache loaded: saldoAnak=$cachedSaldoAnak, approvedLimit=$cachedApprovedLimit")
+            }
+            .addOnFailureListener {
+                cachedSaldoAnak = 0L
+                cachedApprovedLimit = 0L
             }
     }
 
@@ -108,17 +123,17 @@ class ScannerActivity : AppCompatActivity() {
 
             val scanner = BarcodeScanning.getClient()
 
-            imageAnalysis.setAnalyzer(executor) { imageProxy ->
+            @OptIn(ExperimentalGetImage::class)
+            val analyzer = ImageAnalysis.Analyzer { imageProxy: ImageProxy ->
                 val mediaImage = imageProxy.image
                 if (mediaImage == null) {
                     imageProxy.close()
-                    return@setAnalyzer
+                    return@Analyzer
                 }
 
                 if (isProcessing) {
-                    // sedang memproses hasil sebelumnya -> tutup frame
                     imageProxy.close()
-                    return@setAnalyzer
+                    return@Analyzer
                 }
 
                 try {
@@ -130,9 +145,7 @@ class ScannerActivity : AppCompatActivity() {
                             if (barcodes.isNotEmpty()) {
                                 val raw = barcodes[0].rawValue
                                 if (!raw.isNullOrEmpty()) {
-                                    // block further frames sementara dialog konfirmasi tampil
                                     isProcessing = true
-                                    // tangani hasil (akan menampilkan dialog konfirmasi)
                                     handleScannedJsonWithConfirmation(raw)
                                 }
                             }
@@ -141,15 +154,15 @@ class ScannerActivity : AppCompatActivity() {
                             Log.w("QR", "Scan failure: ${ex.message}")
                         }
                         .addOnCompleteListener {
-                            // pastikan selalu menutup imageProxy agar pipeline CameraX tidak hang
                             imageProxy.close()
                         }
                 } catch (e: Exception) {
-                    // jika ada error konversi/process, pastikan imageProxy ditutup
                     imageProxy.close()
                     Log.w("QR", "Exception processing image: ${e.message}")
                 }
             }
+
+            imageAnalysis.setAnalyzer(executor, analyzer)
 
             try {
                 provider.unbindAll()
@@ -161,9 +174,8 @@ class ScannerActivity : AppCompatActivity() {
     }
 
     /**
-     * Versi handle yang menampilkan konfirmasi terlebih dahulu.
-     * Jika user setuju -> panggil performPayment(...)
-     * Jika batal -> set isProcessing = false (dengan delay kecil agar tidak langsung memproses ulang frame yang sama)
+     * Ambil data user langsung saat scan agar tidak ada race.
+     * Prioritas saldo: saldoAnak -> balance -> saldo
      */
     private fun handleScannedJsonWithConfirmation(raw: String) {
         try {
@@ -173,50 +185,80 @@ class ScannerActivity : AppCompatActivity() {
             val harga = obj.optLong("harga", -1L)
 
             if (harga <= 0L) {
+                runOnUiThread { tvInstruction.text = "QR tidak berisi harga valid" }
+                isProcessing = false
+                return
+            }
+
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid.isNullOrBlank()) {
                 runOnUiThread {
-                    tvInstruction.text = "QR tidak berisi harga valid"
+                    Toast.makeText(this, "User tidak terdeteksi", Toast.LENGTH_SHORT).show()
+                    tvInstruction.text = "User tidak terdeteksi"
                 }
                 isProcessing = false
                 return
             }
 
-            if (saldoUser < harga) {
-                runOnUiThread {
-                    Toast.makeText(this, "Saldo tidak mencukupi untuk Rp ${String.format("%,d", harga)}", Toast.LENGTH_LONG).show()
-                    tvInstruction.text = "Saldo tidak cukup"
+            db.collection("users").document(uid)
+                .get()
+                .addOnSuccessListener { doc ->
+                    // baca saldo anak dulu, fallback ke balance/saldo
+                    val curSaldoAnak = doc.getLong("saldoAnak") ?: doc.getLong("balance") ?: doc.getLong("saldo") ?: 0L
+                    val curApproved = when (val v = doc.get("approvedLimit")) {
+                        is Number -> v.toLong()
+                        is String -> v.toString().toLongOrNull() ?: 0L
+                        else -> 0L
+                    }
+
+                    // update cache
+                    cachedSaldoAnak = curSaldoAnak
+                    cachedApprovedLimit = curApproved
+                    Log.d("QR", "fresh read before confirm: saldoAnak=$curSaldoAnak, approved=$curApproved, harga=$harga")
+
+                    // Aturan yang kita jalankan: pembayaran harus <= saldoAnak (sumber dana).
+                    if (curSaldoAnak < harga) {
+                        runOnUiThread {
+                            Toast.makeText(this, "Saldo anak tidak mencukupi untuk Rp ${String.format("%,d", harga)}", Toast.LENGTH_LONG).show()
+                            tvInstruction.text = "Saldo tidak cukup"
+                        }
+                        isProcessing = false
+                        return@addOnSuccessListener
+                    }
+
+                    // tampilkan dialog konfirmasi
+                    runOnUiThread {
+                        val formatted = "Rp ${String.format("%,d", harga)}"
+                        val message = "Bayar $formatted ke:\n\n$namaToko\nItem: $namaBarang\n\nLanjutkan pembayaran?"
+
+                        AlertDialog.Builder(this)
+                            .setTitle("Konfirmasi Pembayaran")
+                            .setMessage(message)
+                            .setPositiveButton("Bayar") { dialog, _ ->
+                                dialog.dismiss()
+                                performPayment(namaToko, namaBarang, harga)
+                            }
+                            .setNegativeButton("Batal") { dialog, _ ->
+                                dialog.dismiss()
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    isProcessing = false
+                                }, 700)
+                            }
+                            .setOnCancelListener {
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    isProcessing = false
+                                }, 700)
+                            }
+                            .show()
+                    }
                 }
-                isProcessing = false
-                return
-            }
-
-            // tampilkan dialog konfirmasi di UI thread
-            runOnUiThread {
-                val formatted = "Rp ${String.format("%,d", harga)}"
-                val message = "Bayar $formatted ke:\n\n$namaToko\nItem: $namaBarang\n\nLanjutkan pembayaran?"
-
-                AlertDialog.Builder(this)
-                    .setTitle("Konfirmasi Pembayaran")
-                    .setMessage(message)
-                    .setPositiveButton("Bayar") { dialog, _ ->
-                        dialog.dismiss()
-                        // lanjutkan pembayaran
-                        performPayment(namaToko, namaBarang, harga)
+                .addOnFailureListener { e ->
+                    Log.w("QR", "Gagal baca user doc: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(this, "Gagal memeriksa saldo: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
-                    .setNegativeButton("Batal") { dialog, _ ->
-                        dialog.dismiss()
-                        // beri delay kecil agar scanner tidak langsung membaca barcode yang sama
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            isProcessing = false
-                        }, 700)
-                    }
-                    .setOnCancelListener {
-                        // jika dialog dibatalkan (back / luar area), reset flag setelah delay
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            isProcessing = false
-                        }, 700)
-                    }
-                    .show()
-            }
+                    isProcessing = false
+                }
         } catch (e: Exception) {
             runOnUiThread {
                 tvInstruction.text = "QR tidak valid"
@@ -225,54 +267,87 @@ class ScannerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Commit pembayaran di dalam transaction.
+     * Baca field yang benar (saldoAnak, approvedLimit) dan update sesuai.
+     */
     private fun performPayment(toko: String, barang: String, jumlah: Long) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             isProcessing = false
             return
         }
+        val userRef = db.collection("users").document(uid)
 
-        val newSaldo = (saldoUser - jumlah)
-        val tx = hashMapOf(
-            "type" to "pengeluaran",
-            "toko" to toko,
-            "barang" to barang,
-            "amount" to jumlah,
-            "createdAt" to System.currentTimeMillis()
-        )
+        db.runTransaction { tr ->
+            val userDoc = tr.get(userRef)
 
-        // lakukan update saldo dan pencatatan transaksi
-        db.collection("users").document(userId)
-            .update("balance", newSaldo)
-            .addOnSuccessListener {
-                // catat transaksi
-                db.collection("users").document(userId)
-                    .collection("transactions")
-                    .add(tx)
-                    .addOnSuccessListener {
-                        saldoUser = newSaldo
-                        runOnUiThread {
-                            Toast.makeText(this, "Pembayaran Rp ${String.format("%,d", jumlah)} berhasil", Toast.LENGTH_LONG).show()
-                            tvInstruction.text = "Pembayaran berhasil ✅"
-                        }
-                    }
-                    .addOnFailureListener {
-                        runOnUiThread {
-                            Toast.makeText(this, "Pembayaran berhasil, tapi gagal simpan transaksi", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+            // baca saldoAnak (prioritas), fallback
+            val curSaldoAnak = userDoc.getLong("saldoAnak") ?: userDoc.getLong("balance") ?: userDoc.getLong("saldo") ?: 0L
+            val curApproved = when (val v = userDoc.get("approvedLimit")) {
+                is Number -> v.toLong()
+                is String -> v.toString().toLongOrNull() ?: 0L
+                else -> 0L
             }
-            .addOnFailureListener { e ->
-                runOnUiThread {
-                    Toast.makeText(this, "Gagal mengupdate saldo: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+
+            Log.d("QR", "inside transaction: curSaldoAnak=$curSaldoAnak, curApproved=$curApproved, jumlah=$jumlah")
+
+            // double-check saldo cukup
+            if (curSaldoAnak < jumlah) {
+                throw Exception("Saldo anak tidak mencukupi saat commit")
             }
-            .addOnCompleteListener {
-                // setelah semua, reset flag agar scanner dapat mendeteksi lagi
-                // beri sedikit delay agar transisi terlihat lebih natural
-                Handler(Looper.getMainLooper()).postDelayed({
-                    isProcessing = false
-                }, 700)
+
+            // bagian yang "dipakai dari approval" untuk audit: gunakan sampai approvedLimit
+            val usedFromApproved = if (curApproved >= jumlah) jumlah else curApproved
+            // sumber pemotongan dana: saldoAnak dikurangi seluruh jumlah
+            val usedFromSaldoAnak = jumlah
+
+            val newApproved = (curApproved - usedFromApproved).coerceAtLeast(0L)
+            val newSaldoAnak = (curSaldoAnak - usedFromSaldoAnak).coerceAtLeast(0L)
+
+            // update approvedLimit jika ada perubahan
+            if (usedFromApproved > 0L) {
+                tr.update(userRef, "approvedLimit", newApproved)
             }
+            // update saldoAnak / fallback field
+            if (userDoc.contains("saldoAnak")) {
+                tr.update(userRef, "saldoAnak", newSaldoAnak)
+            } else if (userDoc.contains("balance")) {
+                tr.update(userRef, "balance", newSaldoAnak)
+            } else if (userDoc.contains("saldo")) {
+                tr.update(userRef, "saldo", newSaldoAnak)
+            } else {
+                tr.update(userRef, "saldoAnak", newSaldoAnak) // create field if none
+            }
+
+            // catat transaksi
+            val txDoc = userRef.collection("transactions").document()
+            val txData = mapOf(
+                "type" to "pengeluaran",
+                "toko" to toko,
+                "barang" to barang,
+                "amount" to jumlah,
+                "usedFromApproved" to usedFromApproved,
+                "usedFromSaldoAnak" to (usedFromSaldoAnak - usedFromApproved),
+                "createdAt" to FieldValue.serverTimestamp()
+            )
+            tr.set(txDoc, txData)
+        }.addOnSuccessListener {
+            // refresh cache
+            loadCache()
+            runOnUiThread {
+                Toast.makeText(this, "Pembayaran Rp ${String.format("%,d", jumlah)} berhasil", Toast.LENGTH_LONG).show()
+                tvInstruction.text = "Pembayaran berhasil ✅"
+            }
+        }.addOnFailureListener { e ->
+            runOnUiThread {
+                Toast.makeText(this, "Gagal melakukan pembayaran: ${e.message}", Toast.LENGTH_LONG).show()
+                tvInstruction.text = "Pembayaran gagal"
+            }
+        }.addOnCompleteListener {
+            Handler(Looper.getMainLooper()).postDelayed({
+                isProcessing = false
+            }, 700)
+        }
     }
 
     override fun onDestroy() {

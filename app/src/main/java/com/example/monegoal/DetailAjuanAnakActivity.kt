@@ -34,6 +34,7 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
     private lateinit var btnTolak: CardView
     private lateinit var btnTunda: CardView
     private lateinit var headerTitle: TextView
+    private lateinit var childUsername: TextView
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -41,41 +42,33 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
     private var childId: String? = null
     private var submissionId: String? = null
     private var submissionDocRef: DocumentReference? = null
+    private var submissionCollection: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail_ajuan_anak)
 
-        // Ambil extras (bisa dikirim dari HomeOrtu)
         childId = intent.getStringExtra("childId")
         submissionId = intent.getStringExtra("submissionId")
+        submissionCollection = intent.getStringExtra("submissionCollection")
 
         initViews()
         setupButtonListeners()
 
         when {
-            !submissionId.isNullOrEmpty() -> {
-                // jika submissionId diberikan, langsung load
-                loadSubmissionById(submissionId!!)
-            }
-
+            !submissionId.isNullOrEmpty() -> loadSubmissionById(submissionId!!)
             !childId.isNullOrEmpty() -> {
-                // jika hanya childId diberikan, cari pengajuan terbaru untuk anak ini
                 findLatestSubmissionForChild(childId!!)
-                // juga load data keuangan anak
                 loadChildFinancialData(childId!!)
             }
-
             else -> {
-                // tidak ada info -> gunakan akun saat ini jika ada (mungkin anak)
                 val me = auth.currentUser
                 if (me != null) {
                     childId = me.uid
                     findLatestSubmissionForChild(childId!!)
                     loadChildFinancialData(childId!!)
                 } else {
-                    Toast.makeText(this, "Tidak ada data pengajuan tersedia", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(this, "Tidak ada data pengajuan tersedia", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -88,9 +81,8 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         tvCategory = findViewById(R.id.tvCategory)
         tvReason = findViewById(R.id.tvReason)
         tvBalanceChild = findViewById(R.id.tvBalanceChild)
-        // fallback ids — pastikan ada di layout atau ubah sesuai layoutmu
-        tvPemasukan = findViewById(R.id.tvPemasukan) // optional
-        tvPengeluaran = findViewById(R.id.tvSpentThisMonth) // optional
+        tvPemasukan = findViewById(R.id.tvPemasukan)
+        tvPengeluaran = findViewById(R.id.tvSpentThisMonth)
         tvCountNew = findViewById(R.id.tvCountNew)
         tvCountApproved = findViewById(R.id.tvCountApproved)
         tvCountRejected = findViewById(R.id.tvCountRejected)
@@ -99,6 +91,8 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         btnTolak = findViewById(R.id.btnTolak)
         btnTunda = findViewById(R.id.btnTunda)
         headerTitle = findViewById(R.id.tvHeaderTitle)
+
+        childUsername = findViewById(R.id.childUsername)
     }
 
 
@@ -200,7 +194,7 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                 .addOnFailureListener { showNoSubmissionState() }
         }
 
-// 1) top-level "submissions"
+        // 1) top-level "submissions"
         db.collection("submissions")
             .whereEqualTo("childId", childId)
             .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
@@ -213,7 +207,7 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                     submissionId = doc.id
                     handleSubmissionDoc(doc)
                 } else {
-// 2) top-level "pengajuan_dana" where childId or anakId or anak
+                    // 2) top-level "pengajuan_dana" where childId or anakId or anak
                     db.collection("pengajuan_dana")
                         .whereEqualTo("childId", childId)
                         .orderBy(
@@ -229,7 +223,7 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                                 submissionId = d.id
                                 handleSubmissionDoc(d)
                             } else {
-// coba field 'anakId'
+                                // coba field 'anakId'
                                 db.collection("pengajuan_dana")
                                     .whereEqualTo("anakId", childId)
                                     .orderBy(
@@ -245,7 +239,7 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                                             submissionId = d.id
                                             handleSubmissionDoc(d)
                                         } else {
-// fallback nested
+                                            // fallback nested
                                             checkUsersNested()
                                         }
                                     }
@@ -291,8 +285,16 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         val childNameFromDoc =
             doc.getString("childName") ?: doc.getString("anak") ?: doc.getString("child") ?: ""
 
-        tvChildName.text =
-            if (childNameFromDoc.isNullOrBlank()) (tvChildName.text ?: "Anak") else childNameFromDoc
+        // set nama pada headline (jika ada)
+        if (!childNameFromDoc.isNullOrBlank()) {
+            tvChildName.text = childNameFromDoc
+            // NEW: update juga childUsername (bagian "📊 Keuangan ...")
+            childUsername.text = "📊 Keuangan $childNameFromDoc"
+        } else {
+            // kalau doc tidak berisi nama, biarkan tvChildName (atau isi dari user doc)
+            // jangan menimpa dengan "Kevin" default
+        }
+
         tvChildInfo.text = "Diajukan pada $formattedDate"
         tvNominal.text = formatCurrency(amount)
         tvCategory.text = category
@@ -319,7 +321,9 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                 if (e != null || doc == null || !doc.exists()) return@addSnapshotListener
 
                 val name = doc.getString("name") ?: "Anak"
+                // update kedua TextView: headline dan bagian history
                 tvChildName.text = name
+                childUsername.text = "📊 Keuangan $name"    // <-- make sure this updates
 
                 val balance = doc.getLong("saldoAnak")
                     ?: doc.getLong("saldo")
@@ -467,6 +471,9 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                 else -> 0L
             }
 
+            // --- READ user doc within transaction (required) ---
+            val userDoc = tr.get(userRef)
+
             tr.update(
                 docRef,
                 mapOf("status" to newStatus, "updatedAt" to FieldValue.serverTimestamp())
@@ -478,7 +485,6 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                 ))
                 && !currentStatus.equals("approved", true)
             ) {
-                val userDoc = tr.get(userRef)
                 val hasSaldoAnak = userDoc.contains("saldoAnak")
                 val hasSaldo = userDoc.contains("saldo")
                 val hasBalance = userDoc.contains("balance")
@@ -537,6 +543,7 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         tvReason.text = "-"
         headerTitle.text = "Belum Ada Pengajuan"
         headerTitle.setTextColor(Color.DKGRAY)
+        childUsername.text = "📊 Keuangan Anak"
     }
 
     private fun formatCurrency(amount: Long): String {
