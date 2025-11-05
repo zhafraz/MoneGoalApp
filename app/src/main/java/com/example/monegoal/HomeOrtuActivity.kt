@@ -316,9 +316,7 @@ class HomeOrtuActivity : AppCompatActivity() {
             }
         }
 
-        // jalankan queries untuk setiap chunk dan beberapa kemungkinan collection/field
         for (chunk in idChunks) {
-            // top-level submissions whereIn childId
             pendingQueries++
             firestore.collection("submissions")
                 .whereIn("childId", chunk)
@@ -329,7 +327,6 @@ class HomeOrtuActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { onQueryDone() }
 
-            // top-level pengajuan_dana whereIn childId
             pendingQueries++
             firestore.collection("pengajuan_dana")
                 .whereIn("childId", chunk)
@@ -340,7 +337,6 @@ class HomeOrtuActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { onQueryDone() }
 
-            // pengajuan_dana whereIn anakId (beberapa app menggunakan 'anakId')
             pendingQueries++
             firestore.collection("pengajuan_dana")
                 .whereIn("anakId", chunk)
@@ -351,7 +347,6 @@ class HomeOrtuActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { onQueryDone() }
 
-            // pengajuan_dana whereIn userId (legacy)
             pendingQueries++
             firestore.collection("pengajuan_dana")
                 .whereIn("userId", chunk)
@@ -362,11 +357,9 @@ class HomeOrtuActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { onQueryDone() }
 
-            // fallback: pengajuan_dana whereIn anak (string nama) -- only if you had stored nama in the parents array or similar
-            // (biasanya tidak perlu; saya sertakan cuma untuk kompatibilitas jika dokumenmu pakai field 'anak' berisi nama)
             pendingQueries++
             firestore.collection("pengajuan_dana")
-                .whereIn("anak", chunk) // HATI: ini berguna hanya bila chunk berisi nama, biasanya chunk berisi id -> skip jika tidak relevan
+                .whereIn("anak", chunk)
                 .get()
                 .addOnSuccessListener { snap ->
                     collectedDocs.addAll(snap.documents)
