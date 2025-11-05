@@ -9,6 +9,9 @@ import android.widget.*
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import com.example.monegoal.R
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class AjukanDanaFragment : Fragment() {
@@ -18,6 +21,7 @@ class AjukanDanaFragment : Fragment() {
     private lateinit var btnAjukan: LinearLayout
 
     private lateinit var db: FirebaseFirestore
+    private val auth = FirebaseAuth.getInstance()
 
     private var selectedPriority: String? = null
     private var selectedAmount: Int? = null
@@ -99,15 +103,26 @@ class AjukanDanaFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            val user = auth.currentUser
+            val childId = user?.uid
+            val childName = user?.displayName ?: inputAlasan // fallback - idealnya ambil nama dari profile
+
+            // simpan dengan field yang konsisten / lengkap agar parent bisa menemukan dokumen
             val pengajuan = hashMapOf(
                 "nominal" to nominalText.toInt(),
+                "amount" to nominalText.toInt(),                // beberapa kode memakai "amount"
                 "alasan" to alasanText,
+                "purpose" to alasanText,
                 "prioritas" to selectedPriority,
-                "status" to "Menunggu Persetujuan",
-                "tanggal" to System.currentTimeMillis(),
-                "anak" to "Nama Anak Contoh" // nanti bisa ambil dari session / auth
+                "status" to "pending",                           // gunakan status standar (pending)
+                "tanggal" to FieldValue.serverTimestamp(),       // gunakan serverTimestamp
+                "createdAt" to FieldValue.serverTimestamp(),
+                "anak" to childName,
+                "childName" to childName,
+                "childId" to childId
             )
 
+            // tulis ke collection 'pengajuan_dana' (kamu bisa juga duplikat ke 'submissions' jika perlu)
             db.collection("pengajuan_dana")
                 .add(pengajuan)
                 .addOnSuccessListener {

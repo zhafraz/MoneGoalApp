@@ -1,11 +1,16 @@
 package com.example.monegoal
 
+import android.app.Activity
+import android.graphics.Color
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -19,7 +24,8 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
     private lateinit var tvCategory: TextView
     private lateinit var tvReason: TextView
     private lateinit var tvBalanceChild: TextView
-    private lateinit var tvSpentThisMonth: TextView
+    private lateinit var tvPemasukan: TextView
+    private lateinit var tvPengeluaran: TextView
     private lateinit var tvCountNew: TextView
     private lateinit var tvCountApproved: TextView
     private lateinit var tvCountRejected: TextView
@@ -34,17 +40,45 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
 
     private var childId: String? = null
     private var submissionId: String? = null
+    private var submissionDocRef: DocumentReference? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail_ajuan_anak)
 
+        // Ambil extras (bisa dikirim dari HomeOrtu)
         childId = intent.getStringExtra("childId")
         submissionId = intent.getStringExtra("submissionId")
 
         initViews()
-        loadSubmissionData()
         setupButtonListeners()
+
+        when {
+            !submissionId.isNullOrEmpty() -> {
+                // jika submissionId diberikan, langsung load
+                loadSubmissionById(submissionId!!)
+            }
+
+            !childId.isNullOrEmpty() -> {
+                // jika hanya childId diberikan, cari pengajuan terbaru untuk anak ini
+                findLatestSubmissionForChild(childId!!)
+                // juga load data keuangan anak
+                loadChildFinancialData(childId!!)
+            }
+
+            else -> {
+                // tidak ada info -> gunakan akun saat ini jika ada (mungkin anak)
+                val me = auth.currentUser
+                if (me != null) {
+                    childId = me.uid
+                    findLatestSubmissionForChild(childId!!)
+                    loadChildFinancialData(childId!!)
+                } else {
+                    Toast.makeText(this, "Tidak ada data pengajuan tersedia", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
     }
 
     private fun initViews() {
@@ -54,7 +88,9 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         tvCategory = findViewById(R.id.tvCategory)
         tvReason = findViewById(R.id.tvReason)
         tvBalanceChild = findViewById(R.id.tvBalanceChild)
-        tvSpentThisMonth = findViewById(R.id.tvSpentThisMonth)
+        // fallback ids — pastikan ada di layout atau ubah sesuai layoutmu
+        tvPemasukan = findViewById(R.id.tvPemasukan) // optional
+        tvPengeluaran = findViewById(R.id.tvSpentThisMonth) // optional
         tvCountNew = findViewById(R.id.tvCountNew)
         tvCountApproved = findViewById(R.id.tvCountApproved)
         tvCountRejected = findViewById(R.id.tvCountRejected)
@@ -65,67 +101,287 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         headerTitle = findViewById(R.id.tvHeaderTitle)
     }
 
-    private fun loadSubmissionData() {
-        if (submissionId == null) return
 
-        db.collection("submissions").document(submissionId!!)
-            .addSnapshotListener { doc, e ->
-                if (e != null || doc == null || !doc.exists()) return@addSnapshotListener
+    private fun loadSubmissionById(subId: String) {
+        // helper untuk fallback scanning users collection if needed
+        fun scanUsersForSubmission() {
+            db.collection("users")
+                .get()
+                .addOnSuccessListener { usersSnap ->
+                    var found = false
+                    val tasks = usersSnap.documents
+                    for (u in tasks) {
+                        db.collection("users").document(u.id)
+                            .collection("submissions").document(subId)
+                            .get()
+                            .addOnSuccessListener { subDoc ->
+                                if (!found && subDoc != null && subDoc.exists()) {
+                                    found = true
+                                    submissionDocRef = subDoc.reference
+                                    submissionId = subDoc.id
+                                    handleSubmissionDoc(subDoc)
+                                }
+                            }
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Pengajuan tidak ditemukan", Toast.LENGTH_SHORT).show()
+                }
+        }
 
-                val amount = doc.getLong("amount") ?: 0
-                val category = doc.getString("category") ?: "-"
-                val reason = doc.getString("reason") ?: "-"
-                val status = doc.getString("status") ?: "pending"
-                val createdAt = (doc.getTimestamp("createdAt") ?: Timestamp.now()).toDate()
-                val childName = doc.getString("childName") ?: "Anak"
-                childId = doc.getString("childId") ?: ""
-
-                val formattedDate = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID")).format(createdAt)
-
-                tvChildName.text = childName
-                tvChildInfo.text = "Diajukan pada $formattedDate"
-                tvNominal.text = formatCurrency(amount)
-                tvCategory.text = category
-                tvReason.text = reason
-
-                updateStatusHeader(status)
-                if (!childId.isNullOrEmpty()) loadChildFinancialData(childId!!)
+// 1) coba top-level "submissions"
+        db.collection("submissions").document(subId)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (doc != null && doc.exists()) {
+                    submissionDocRef = doc.reference
+                    submissionId = doc.id
+                    handleSubmissionDoc(doc)
+                } else {
+// 2) coba top-level "pengajuan_dana"
+                    db.collection("pengajuan_dana").document(subId)
+                        .get()
+                        .addOnSuccessListener { pdoc ->
+                            if (pdoc != null && pdoc.exists()) {
+                                submissionDocRef = pdoc.reference
+                                submissionId = pdoc.id
+                                handleSubmissionDoc(pdoc)
+                            } else {
+// 3) scan nested users/*/submissions
+                                scanUsersForSubmission()
+                            }
+                        }
+                        .addOnFailureListener {
+// jika gagal, coba scan users
+                            scanUsersForSubmission()
+                        }
+                }
+            }
+            .addOnFailureListener {
+// fallback ke pengajuan_dana or users scan
+                db.collection("pengajuan_dana").document(subId)
+                    .get()
+                    .addOnSuccessListener { pdoc ->
+                        if (pdoc != null && pdoc.exists()) {
+                            submissionDocRef = pdoc.reference
+                            submissionId = pdoc.id
+                            handleSubmissionDoc(pdoc)
+                        } else {
+                            scanUsersForSubmission()
+                        }
+                    }
+                    .addOnFailureListener { scanUsersForSubmission() }
             }
     }
 
+    /**
+     * Jika hanya punya childId, cari pengajuan terbaru untuk child tersebut.
+     * Periksa top-level "submissions" -> "pengajuan_dana" -> users/{child}/submissions
+     * Simpan reference dokumen yang ditemukan agar update langsung ke dokumen tersebut.
+     */
+    private fun findLatestSubmissionForChild(childId: String) {
+        // helper fallback to nested
+        fun checkUsersNested() {
+            db.collection("users").document(childId)
+                .collection("submissions")
+                .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener { s2 ->
+                    if (!s2.isEmpty) {
+                        val d = s2.documents.first()
+                        submissionDocRef = d.reference
+                        submissionId = d.id
+                        handleSubmissionDoc(d)
+                    } else {
+                        showNoSubmissionState()
+                    }
+                }
+                .addOnFailureListener { showNoSubmissionState() }
+        }
+
+// 1) top-level "submissions"
+        db.collection("submissions")
+            .whereEqualTo("childId", childId)
+            .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+                if (!snap.isEmpty) {
+                    val doc = snap.documents.first()
+                    submissionDocRef = doc.reference
+                    submissionId = doc.id
+                    handleSubmissionDoc(doc)
+                } else {
+// 2) top-level "pengajuan_dana" where childId or anakId or anak
+                    db.collection("pengajuan_dana")
+                        .whereEqualTo("childId", childId)
+                        .orderBy(
+                            "createdAt",
+                            com.google.firebase.firestore.Query.Direction.DESCENDING
+                        )
+                        .limit(1)
+                        .get()
+                        .addOnSuccessListener { s1 ->
+                            if (!s1.isEmpty) {
+                                val d = s1.documents.first()
+                                submissionDocRef = d.reference
+                                submissionId = d.id
+                                handleSubmissionDoc(d)
+                            } else {
+// coba field 'anakId'
+                                db.collection("pengajuan_dana")
+                                    .whereEqualTo("anakId", childId)
+                                    .orderBy(
+                                        "createdAt",
+                                        com.google.firebase.firestore.Query.Direction.DESCENDING
+                                    )
+                                    .limit(1)
+                                    .get()
+                                    .addOnSuccessListener { s2 ->
+                                        if (!s2.isEmpty) {
+                                            val d = s2.documents.first()
+                                            submissionDocRef = d.reference
+                                            submissionId = d.id
+                                            handleSubmissionDoc(d)
+                                        } else {
+// fallback nested
+                                            checkUsersNested()
+                                        }
+                                    }
+                                    .addOnFailureListener { checkUsersNested() }
+                            }
+                        }
+                        .addOnFailureListener { checkUsersNested() }
+                }
+            }
+            .addOnFailureListener { checkUsersNested() }
+    }
+
+    /**
+     * Gunakan doc (submission) untuk mengisi UI.
+     * doc bisa dari top-level "submissions", "pengajuan_dana", atau nested.
+     */
+    private fun handleSubmissionDoc(doc: DocumentSnapshot) {
+        if (submissionDocRef == null) submissionDocRef = doc.reference
+        submissionId = doc.id
+
+        val amount = when (val a = doc.get("amount") ?: doc.get("nominal") ?: doc.get("amountRp")) {
+            is Number -> a.toLong()
+            is String -> a.toLongOrNull() ?: 0L
+            else -> 0L
+        }
+        val category = doc.getString("category") ?: doc.getString("keperluan") ?: "-"
+        val reason =
+            doc.getString("reason") ?: doc.getString("alasan") ?: doc.getString("purpose") ?: "-"
+        val status = doc.getString("status") ?: doc.getString("state") ?: "pending"
+
+        val ts =
+            doc.get("createdAt") ?: doc.get("tanggal") ?: doc.get("date") ?: doc.get("created_at")
+        val date = when (ts) {
+            is Timestamp -> ts.toDate()
+            is com.google.firebase.Timestamp -> ts.toDate()
+            is Long -> Date(ts)
+            is Number -> Date(ts.toLong())
+            is Date -> ts
+            else -> Date()
+        }
+        val formattedDate = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID")).format(date)
+
+        val childNameFromDoc =
+            doc.getString("childName") ?: doc.getString("anak") ?: doc.getString("child") ?: ""
+
+        tvChildName.text =
+            if (childNameFromDoc.isNullOrBlank()) (tvChildName.text ?: "Anak") else childNameFromDoc
+        tvChildInfo.text = "Diajukan pada $formattedDate"
+        tvNominal.text = formatCurrency(amount)
+        tvCategory.text = category
+        tvReason.text = reason
+
+        val docChildId =
+            doc.getString("childId") ?: doc.getString("anakId") ?: doc.getString("userId")
+        if (!docChildId.isNullOrBlank()) {
+            childId = docChildId
+            loadChildFinancialData(childId!!)
+        } else {
+            childId?.let { loadChildFinancialData(it) }
+        }
+
+        updateStatusHeader(status)
+    }
+
+    /**
+     * Ambil data keuangan & statistik pengajuan untuk childId
+     */
     private fun loadChildFinancialData(childId: String) {
-        // ambil saldo dari users
         db.collection("users").document(childId)
             .addSnapshotListener { doc, e ->
                 if (e != null || doc == null || !doc.exists()) return@addSnapshotListener
 
-                val balance = doc.getLong("saldo") ?: doc.getLong("balance") ?: 0
+                val name = doc.getString("name") ?: "Anak"
+                tvChildName.text = name
+
+                val balance = doc.getLong("saldoAnak")
+                    ?: doc.getLong("saldo")
+                    ?: doc.getLong("balance")
+                    ?: 0L
                 tvBalanceChild.text = formatCurrency(balance)
 
-                // Ambil transaksi anak
                 db.collection("users").document(childId)
                     .collection("transactions")
                     .get()
-                    .addOnSuccessListener { snapshot ->
+                    .addOnSuccessListener { snap ->
                         var pemasukan = 0L
                         var pengeluaran = 0L
+                        for (d in snap.documents) {
+                            val type = (d.getString("type") ?: "").lowercase(Locale.getDefault())
+                            val category =
+                                (d.getString("category") ?: "").lowercase(Locale.getDefault())
 
-                        for (d in snapshot.documents) {
-                            val type = d.getString("type")?.lowercase() ?: ""
-                            val category = d.getString("category")?.lowercase() ?: ""
-                            val amount = d.getLong("amount") ?: 0L
+                            val amt = when (val a = d.get("amount")) {
+                                is Number -> a.toLong()
+                                is String -> a.toLongOrNull() ?: 0L
+                                else -> 0L
+                            }
 
-                            if (type in listOf("pemasukan", "income") || category in listOf("topup", "deposit")) {
-                                pemasukan += amount
-                            } else if (type in listOf("pengeluaran", "expense") || category in listOf("belanja", "pembelian")) {
-                                pengeluaran += amount
+                            val isIncome =
+                                type in listOf("pemasukan", "income", "topup", "deposit") ||
+                                        category in listOf("topup", "deposit")
+                            val isExpense = type in listOf(
+                                "pengeluaran",
+                                "expense",
+                                "pembelian",
+                                "purchase",
+                                "belanja"
+                            ) ||
+                                    category in listOf("pembelian", "belanja", "purchase")
+
+                            when {
+                                isIncome -> pemasukan += amt
+                                isExpense -> pengeluaran += amt
                             }
                         }
 
-                        tvSpentThisMonth.text = formatCurrency(pengeluaran)
+                        try {
+                            tvPemasukan.text = formatCurrency(pemasukan)
+                        } catch (_: Throwable) {
+                        }
+                        try {
+                            tvPengeluaran.text = formatCurrency(pengeluaran)
+                        } catch (_: Throwable) {
+                        }
+                    }
+                    .addOnFailureListener {
+                        try {
+                            tvPemasukan.text = formatCurrency(0L)
+                        } catch (_: Throwable) {
+                        }
+                        try {
+                            tvPengeluaran.text = formatCurrency(0L)
+                        } catch (_: Throwable) {
+                        }
                     }
 
-                // Hitung statistik pengajuan anak
                 db.collection("submissions")
                     .whereEqualTo("childId", childId)
                     .get()
@@ -135,11 +391,11 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                         var pending = 0
                         var newCount = 0
 
-                        for (d in q) {
-                            when (d.getString("status")?.lowercase()) {
-                                "approved" -> approved++
-                                "rejected" -> rejected++
-                                "pending" -> pending++
+                        for (d in q.documents) {
+                            when (d.getString("status")?.lowercase(Locale.getDefault())) {
+                                "approved", "disetujui" -> approved++
+                                "rejected", "ditolak" -> rejected++
+                                "pending", "menunggu" -> pending++
                                 "new" -> newCount++
                             }
                         }
@@ -149,22 +405,31 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                         tvCountPending.text = pending.toString()
                         tvCountNew.text = newCount.toString()
                     }
+                    .addOnFailureListener {
+                        tvCountApproved.text = "0"
+                        tvCountRejected.text = "0"
+                        tvCountPending.text = "0"
+                        tvCountNew.text = "0"
+                    }
             }
     }
 
-    private fun updateStatusHeader(status: String) {
-        when (status.lowercase()) {
-            "approved" -> {
+    private fun updateStatusHeader(statusRaw: String) {
+        val s = statusRaw.toLowerCase(Locale.getDefault())
+        when {
+            s.contains("approved") || s.contains("setuju") || s.contains("disetujui") -> {
                 headerTitle.text = "✅ Disetujui Orang Tua"
-                headerTitle.setTextColor(getColor(R.color.green))
+                headerTitle.setTextColor(Color.parseColor("#34C759")) // green
             }
-            "rejected" -> {
+
+            s.contains("rejected") || s.contains("tolak") || s.contains("ditolak") -> {
                 headerTitle.text = "❌ Ditolak Orang Tua"
-                headerTitle.setTextColor(getColor(R.color.red))
+                headerTitle.setTextColor(Color.parseColor("#FF4961")) // red
             }
+
             else -> {
                 headerTitle.text = "⏰ Menunggu Persetujuan"
-                headerTitle.setTextColor(getColor(R.color.orange))
+                headerTitle.setTextColor(Color.parseColor("#FFB800")) // orange
             }
         }
     }
@@ -175,33 +440,107 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         btnTunda.setOnClickListener { updateSubmissionStatus("pending") }
     }
 
-    private fun updateSubmissionStatus(status: String) {
-        if (childId.isNullOrEmpty() || submissionId.isNullOrEmpty()) return
+    /**
+     * Update status pengajuan. Jika disetujui, tambahkan amount ke saldo anak.
+     * Transaksi dilakukan atomically.
+     * Menggunakan submissionDocRef untuk memastikan update diarahkan ke dokumen yg benar.
+     */
+    private fun updateSubmissionStatus(newStatus: String) {
+        val docRef = submissionDocRef
+        val cid = childId
+        if (docRef == null || cid.isNullOrBlank()) {
+            Toast.makeText(this, "Tidak ada pengajuan/anak untuk diperbarui", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
 
-        val submissionRef = db.collection("submissions").document(submissionId!!)
-        val userRef = db.collection("users").document(childId!!)
+        val userRef = db.collection("users").document(cid)
 
         db.runTransaction { tr ->
-            val doc = tr.get(submissionRef)
-            val currentStatus = doc.getString("status") ?: ""
-            val amount = doc.getLong("amount") ?: 0L
+            val subDoc = tr.get(docRef)
+            if (!subDoc.exists()) throw Exception("Submission tidak ditemukan")
+            val currentStatus = subDoc.getString("status") ?: ""
+            val amount = when (val a =
+                subDoc.get("amount") ?: subDoc.get("nominal") ?: subDoc.get("amountRp")) {
+                is Number -> a.toLong()
+                is String -> a.toLongOrNull() ?: 0L
+                else -> 0L
+            }
 
-            tr.update(submissionRef, "status", status)
+            tr.update(
+                docRef,
+                mapOf("status" to newStatus, "updatedAt" to FieldValue.serverTimestamp())
+            )
 
-            if (status == "approved" && currentStatus != "approved") {
-                val curBal = tr.get(userRef).getLong("saldo") ?: tr.get(userRef).getLong("balance") ?: 0L
-                tr.update(userRef, "saldo", curBal + amount)
+            if ((newStatus.equals("approved", ignoreCase = true) || newStatus.contains(
+                    "setuju",
+                    true
+                ))
+                && !currentStatus.equals("approved", true)
+            ) {
+                val userDoc = tr.get(userRef)
+                val hasSaldoAnak = userDoc.contains("saldoAnak")
+                val hasSaldo = userDoc.contains("saldo")
+                val hasBalance = userDoc.contains("balance")
+
+                when {
+                    hasSaldoAnak -> {
+                        val cur = userDoc.getLong("saldoAnak") ?: 0L
+                        tr.update(userRef, "saldoAnak", cur + amount)
+                    }
+
+                    hasSaldo -> {
+                        val cur = userDoc.getLong("saldo") ?: 0L
+                        tr.update(userRef, "saldo", cur + amount)
+                    }
+
+                    hasBalance -> {
+                        val cur = userDoc.getLong("balance") ?: 0L
+                        tr.update(userRef, "balance", cur + amount)
+                    }
+
+                    else -> {
+                        tr.update(userRef, "saldoAnak", amount)
+                    }
+                }
+
+                val txCol = userRef.collection("transactions").document()
+                val txData = mapOf(
+                    "type" to "pemasukan",
+                    "category" to "topup_from_parent_on_approve",
+                    "amount" to amount,
+                    "timestamp" to FieldValue.serverTimestamp(),
+                    "note" to "Auto top-up saat approval pengajuan"
+                )
+                tr.set(txCol, txData)
             }
         }.addOnSuccessListener {
-            Toast.makeText(this, "Status diperbarui: $status", Toast.LENGTH_SHORT).show()
-            updateStatusHeader(status)
-        }.addOnFailureListener {
-            Toast.makeText(this, "Gagal memperbarui status", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Status diperbarui: $newStatus", Toast.LENGTH_SHORT).show()
+            updateStatusHeader(newStatus)
+
+            setResult(Activity.RESULT_OK)
+            finish()
+        }.addOnFailureListener { e ->
+            Toast.makeText(
+                this,
+                "Gagal memperbarui status: ${e.localizedMessage}",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
+    private fun showNoSubmissionState() {
+        tvChildName.text = "Anak"
+        tvChildInfo.text = "-"
+        tvNominal.text = formatCurrency(0L)
+        tvCategory.text = "-"
+        tvReason.text = "-"
+        headerTitle.text = "Belum Ada Pengajuan"
+        headerTitle.setTextColor(Color.DKGRAY)
+    }
+
     private fun formatCurrency(amount: Long): String {
-        val formatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(amount)
-        return formatted.replace("Rp", "Rp ").trim()
+        val nf = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        return nf.format(amount).replace("Rp", "Rp ").trim()
     }
 }

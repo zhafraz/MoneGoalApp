@@ -1,11 +1,13 @@
 package com.example.monegoal
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
@@ -19,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import java.text.NumberFormat
 import java.util.Locale
+import kotlin.math.min
 
 class HomeOrtuActivity : AppCompatActivity() {
 
@@ -38,12 +41,20 @@ class HomeOrtuActivity : AppCompatActivity() {
     private lateinit var adapter: SubmissionAdapter
     private val submissionList = mutableListOf<Submission>()
 
+    // launcher untuk membuka DetailAjuanAnakActivity dan refresh saat RESULT_OK
+    private val detailLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // reload antrian (pengajuan terbaru/terlama)
+            loadParentHomeData()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_home_ortu)
 
-        // edge-to-edge padding
+        // safe edge-to-edge padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -53,13 +64,15 @@ class HomeOrtuActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        bindViews()
-        setupRecycler()
-        setupNavigation()
-        loadParentHomeData()
+        bindViews()          // inisialisasi semua view
+        setupRecycler()      // setup adapter & recycler
+        setupNavigation()    // pasang listener setelah view di-bind
+
+        loadParentHomeData() // load data
     }
 
     private fun bindViews() {
+        // pastikan ID di layout sama persis dengan ini
         tvUserName = findViewById(R.id.tvUserName)
         tvUserRole = findViewById(R.id.tvUserRole)
         tvTotalBalance = findViewById(R.id.tvTotalChildBalance)
@@ -76,13 +89,30 @@ class HomeOrtuActivity : AppCompatActivity() {
                 putExtra("submissionId", submission.id)
                 putExtra("childId", submission.childId)
             }
-            startActivity(intent)
+            // gunakan launcher agar kita dapat refresh ketika detail selesai (RESULT_OK)
+            detailLauncher.launch(intent)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
     }
 
     private fun setupNavigation() {
+        cardDetailPengajuan.setOnClickListener {
+            // buka activity detail (tampilkan pengajuan terlama jika ada)
+            // kalau mau buka oldest submission via intent, bisa ambil dari submissionList[0] jika ada
+            if (submissionList.isNotEmpty()) {
+                val s = submissionList.minByOrNull { it.createdAt }!!
+                val intent = Intent(this, DetailAjuanAnakActivity::class.java).apply {
+                    putExtra("submissionId", s.id)
+                    putExtra("childId", s.childId)
+                }
+                detailLauncher.launch(intent)
+            } else {
+                // buka halaman detail kosong
+                startActivity(Intent(this, DetailAjuanAnakActivity::class.java))
+            }
+        }
+
         cardTopup.setOnClickListener {
             startActivity(Intent(this, TopupActivity::class.java))
         }
@@ -94,7 +124,8 @@ class HomeOrtuActivity : AppCompatActivity() {
     }
 
     private fun loadParentHomeData() {
-        val parentEmail = intent.getStringExtra("parentEmail") ?: auth.currentUser?.email
+        val intentEmail = intent.getStringExtra("parentEmail")
+        val parentEmail = intentEmail ?: auth.currentUser?.email
 
         if (parentEmail.isNullOrBlank()) {
             tvUserName.text = "Orang Tua"
@@ -108,7 +139,7 @@ class HomeOrtuActivity : AppCompatActivity() {
 
         val parentId = encodeEmailToId(parentEmail)
 
-        // Ambil nama parent
+        // ambil nama parent (jika ada)
         firestore.collection("parents").document(parentId)
             .get()
             .addOnSuccessListener { parentSnap ->
@@ -119,69 +150,155 @@ class HomeOrtuActivity : AppCompatActivity() {
                 tvUserName.text = parentEmail.substringBefore("@")
             }
 
-        // Ambil semua anak yang punya parentId ini
+        // Ambil semua anak yang memiliki parentId atau parentEmail di field "parents" (array)
+        val childDocs = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+
+        // 1) whereArrayContains encoded parentId
         firestore.collection("users")
             .whereArrayContains("parents", parentId)
             .get()
-            .addOnSuccessListener { docs ->
-                val totalChildren = docs.size()
-                var totalBalance = 0L
-                val childIds = mutableListOf<String>()
+            .addOnSuccessListener { snap1 ->
+                for (d in snap1.documents) childDocs[d.id] = d
 
-                for (doc in docs.documents) {
-                    val bal = doc.getLong("balance") ?: 0L
-                    totalBalance += bal
-                    childIds.add(doc.id)
-                }
+                // 2) whereArrayContains plain parent email
+                firestore.collection("users")
+                    .whereArrayContains("parents", parentEmail)
+                    .get()
+                    .addOnSuccessListener { snap2 ->
+                        for (d in snap2.documents) childDocs[d.id] = d
 
-                tvUserRole.text = "Pengelola Keluarga ($totalChildren Anak)"
-                tvTotalBalance.text = formatCurrency(totalBalance)
-
-                if (childIds.isNotEmpty()) {
-                    loadSubmissionsForChildren(childIds)
-                } else {
-                    showEmptyState()
-                }
+                        // selesai gabung hasil
+                        handleChildrenDocs(childDocs.values.toList())
+                    }
+                    .addOnFailureListener {
+                        // tetap handle hasil dari query pertama
+                        handleChildrenDocs(childDocs.values.toList())
+                    }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Gagal memuat data anak: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                showEmptyState()
+            .addOnFailureListener {
+                // kalau query pertama gagal, coba langsung berdasarkan email (fallback)
+                firestore.collection("users")
+                    .whereArrayContains("parents", parentEmail)
+                    .get()
+                    .addOnSuccessListener { snap2 ->
+                        for (d in snap2.documents) childDocs[d.id] = d
+                        handleChildrenDocs(childDocs.values.toList())
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Gagal memuat data anak", Toast.LENGTH_SHORT).show()
+                        showEmptyState()
+                    }
             }
     }
 
+    private fun handleChildrenDocs(docs: List<com.google.firebase.firestore.DocumentSnapshot>) {
+        val totalChildren = docs.size
+        var totalBalance = 0L
+        val childIds = mutableListOf<String>()
+
+        for (doc in docs) {
+            // prioritas field untuk saldo anak: saldoAnak -> saldo -> balance (legacy)
+            val bal = doc.getLong("saldoAnak") ?: doc.getLong("saldo") ?: doc.getLong("balance") ?: 0L
+            totalBalance += bal
+            childIds.add(doc.id)
+        }
+
+        tvUserRole.text = "Pengelola Keluarga ($totalChildren Anak)"
+        tvTotalBalance.text = formatCurrency(totalBalance)
+
+        if (childIds.isNotEmpty()) {
+            loadSubmissionsForChildren(childIds)
+        } else {
+            showEmptyState()
+        }
+    }
+
+    // helper chunk karena whereIn max 10
+    private fun <T> chunkList(list: List<T>, chunkSize: Int): List<List<T>> {
+        val out = mutableListOf<List<T>>()
+        var i = 0
+        while (i < list.size) {
+            val end = min(i + chunkSize, list.size)
+            out.add(list.subList(i, end))
+            i += chunkSize
+        }
+        return out
+    }
+
     private fun loadSubmissionsForChildren(childIds: List<String>) {
-        val queryIds = if (childIds.size > 10) childIds.take(10) else childIds
+        if (childIds.isEmpty()) {
+            showEmptyState()
+            return
+        }
 
-        firestore.collection("submissions")
-            .whereIn("childId", queryIds)
-            .get()
-            .addOnSuccessListener { snapshot: QuerySnapshot ->
+        submissionList.clear()
+
+        // chunk list karena whereIn maksimal 10
+        val idChunks = chunkList(childIds, 10)
+
+        var pendingQueries = 0
+        val collectedDocs = mutableListOf<com.google.firebase.firestore.DocumentSnapshot>()
+
+        fun onQueryDone() {
+            pendingQueries--
+            if (pendingQueries <= 0) {
+                // gabungkan, unique by id, filter status pending, lalu urutkan by createdAt ascending (terlama dulu)
+                val distinct = collectedDocs
+                    .distinctBy { it.id }
+                    .filter { doc ->
+                        val raw = (doc.getString("status") ?: doc.getString("state") ?: "").lowercase()
+                        raw.contains("pending") || raw.contains("new") || raw.contains("menunggu")
+                    }
+                    .sortedBy { doc ->
+                        // ambil timestamp/createdAt/tanggal dalam millis, fallback ke now
+                        val ts = doc.get("createdAt") ?: doc.get("tanggal") ?: doc.get("date") ?: doc.get("created_at")
+                        when (ts) {
+                            is com.google.firebase.Timestamp -> ts.toDate().time
+                            is com.google.firebase.Timestamp -> ts.toDate().time
+                            is java.util.Date -> ts.time
+                            is Number -> ts.toLong()
+                            is Long -> ts
+                            else -> Long.MAX_VALUE // kalau ga ada, taruh di akhir
+                        }
+                    }
+
                 submissionList.clear()
+                for (doc in distinct) {
+                    val amount = doc.getLong("nominal")
+                        ?: doc.getLong("amount")
+                        ?: (doc.get("amount") as? Number)?.toLong()
+                        ?: 0L
 
-                val filtered = snapshot.documents.filter { d ->
-                    val status = d.getString("status") ?: ""
-                    status.equals("pending", true) || status.equals("new", true)
-                }
-
-                for (doc in filtered) {
-                    val amount = doc.getLong("amount") ?: 0L
-                    val createdAtMillis: Long = when (val ts = doc.get("createdAt")) {
-                        is Timestamp -> ts.toDate().time
-                        is Long -> ts
+                    val createdAtMillis: Long = when (val ts = doc.get("createdAt") ?: doc.get("tanggal") ?: doc.get("date")) {
+                        is com.google.firebase.Timestamp -> ts.toDate().time
+                        is java.util.Date -> ts.time
                         is Number -> ts.toLong()
                         else -> System.currentTimeMillis()
                     }
 
-                    val childId = doc.getString("childId") ?: ""
+                    val childId = doc.getString("childId")
+                        ?: doc.getString("userId")
+                        ?: doc.getString("anakId")
+                        ?: ""
+
+                    val childName = doc.getString("childName")
+                        ?: doc.getString("anak")
+                        ?: doc.getString("childName")
+                        ?: "Anak"
+
+                    val title = doc.getString("title")
+                        ?: doc.getString("category")
+                        ?: doc.getString("keperluan")
+                        ?: "Pengajuan"
 
                     submissionList.add(
                         Submission(
                             id = doc.id,
                             childId = childId,
-                            childName = doc.getString("childName") ?: "Anak",
-                            title = doc.getString("title") ?: (doc.getString("category") ?: "Pengajuan"),
+                            childName = childName,
+                            title = title,
                             amount = amount,
-                            status = doc.getString("status") ?: "unknown",
+                            status = doc.getString("status") ?: doc.getString("state") ?: "unknown",
                             createdAt = createdAtMillis
                         )
                     )
@@ -190,21 +307,79 @@ class HomeOrtuActivity : AppCompatActivity() {
                 adapter.updateData(submissionList)
 
                 val pendingCount = submissionList.count {
-                    it.status.equals("pending", true) || it.status.equals("new", true)
+                    val s = it.status.lowercase()
+                    s.contains("pending") || s.contains("new") || s.contains("menunggu")
                 }
                 tvPendingCount.text = pendingCount.toString()
 
                 if (submissionList.isEmpty()) showEmptyState() else showRecycler()
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Gagal memuat pengajuan: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                showEmptyState()
-            }
+        }
+
+        // jalankan queries untuk setiap chunk dan beberapa kemungkinan collection/field
+        for (chunk in idChunks) {
+            // top-level submissions whereIn childId
+            pendingQueries++
+            firestore.collection("submissions")
+                .whereIn("childId", chunk)
+                .get()
+                .addOnSuccessListener { snap ->
+                    collectedDocs.addAll(snap.documents)
+                    onQueryDone()
+                }
+                .addOnFailureListener { onQueryDone() }
+
+            // top-level pengajuan_dana whereIn childId
+            pendingQueries++
+            firestore.collection("pengajuan_dana")
+                .whereIn("childId", chunk)
+                .get()
+                .addOnSuccessListener { snap ->
+                    collectedDocs.addAll(snap.documents)
+                    onQueryDone()
+                }
+                .addOnFailureListener { onQueryDone() }
+
+            // pengajuan_dana whereIn anakId (beberapa app menggunakan 'anakId')
+            pendingQueries++
+            firestore.collection("pengajuan_dana")
+                .whereIn("anakId", chunk)
+                .get()
+                .addOnSuccessListener { snap ->
+                    collectedDocs.addAll(snap.documents)
+                    onQueryDone()
+                }
+                .addOnFailureListener { onQueryDone() }
+
+            // pengajuan_dana whereIn userId (legacy)
+            pendingQueries++
+            firestore.collection("pengajuan_dana")
+                .whereIn("userId", chunk)
+                .get()
+                .addOnSuccessListener { snap ->
+                    collectedDocs.addAll(snap.documents)
+                    onQueryDone()
+                }
+                .addOnFailureListener { onQueryDone() }
+
+            // fallback: pengajuan_dana whereIn anak (string nama) -- only if you had stored nama in the parents array or similar
+            // (biasanya tidak perlu; saya sertakan cuma untuk kompatibilitas jika dokumenmu pakai field 'anak' berisi nama)
+            pendingQueries++
+            firestore.collection("pengajuan_dana")
+                .whereIn("anak", chunk) // HATI: ini berguna hanya bila chunk berisi nama, biasanya chunk berisi id -> skip jika tidak relevan
+                .get()
+                .addOnSuccessListener { snap ->
+                    collectedDocs.addAll(snap.documents)
+                    onQueryDone()
+                }
+                .addOnFailureListener { onQueryDone() }
+        }
     }
 
     private fun showEmptyState() {
         tvNoSubmissions.visibility = View.VISIBLE
         recyclerView.visibility = View.GONE
+        tvPendingCount.text = "0"
     }
 
     private fun showRecycler() {
@@ -218,6 +393,7 @@ class HomeOrtuActivity : AppCompatActivity() {
     }
 
     private fun encodeEmailToId(email: String): String {
+        // menggunakan encoding yang konsisten
         return email.replace("@", "_at_").replace(".", "_dot_")
     }
 }

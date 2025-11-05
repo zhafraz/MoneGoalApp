@@ -17,7 +17,6 @@ class ChildGoalsAdapter(
     private val onClick: (Goal) -> Unit,
     private val onComplete: (Goal) -> Unit
 ) : RecyclerView.Adapter<ChildGoalsAdapter.GoalViewHolder>() {
-
     private var currentBalance: Long = 0L
 
     inner class GoalViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -38,18 +37,25 @@ class ChildGoalsAdapter(
     override fun onBindViewHolder(holder: GoalViewHolder, position: Int) {
         val goal = goals[position]
         holder.tvTitle.text = goal.title
-        holder.tvDescription.text = goal.description
+        holder.tvDescription.text = goal.description ?: ""
 
-        // collected: gunakan currentBalance (saldo user) atau goal.currentAmount sesuai kebutuhan.
-        val collected = currentBalance.coerceAtMost(goal.targetAmount)
-        holder.tvCurrent.text = formatCurrency(collected)
+        // Gunakan goal.currentAmount hanya jika > 0, kalau tidak gunakan currentBalance (saldo anak)
+        val currentAmount = if (goal.currentAmount > 0L) goal.currentAmount else currentBalance
+
+        // Jangan tampilkan nilai lebih besar dari target
+        val displayedCurrent = currentAmount.coerceAtMost(goal.targetAmount)
+        holder.tvCurrent.text = formatCurrency(displayedCurrent)
         holder.tvTargetLabel.text = "Target: ${formatCurrency(goal.targetAmount)}"
         holder.tvPoints.text = "${goal.points} Poin"
 
+        // Hitung progress berdasarkan sumber di atas
         val progressPercent = if (goal.targetAmount > 0L) {
-            ((collected.toDouble() / goal.targetAmount.toDouble()) * 100).toInt()
+            ((currentAmount.toDouble() / goal.targetAmount.toDouble()) * 100).toInt().coerceIn(0, 100)
         } else 0
-        holder.progressBar.progress = progressPercent.coerceIn(0, 100)
+        holder.progressBar.progress = progressPercent
+
+        // Clear previous click listener supaya tidak duplicate
+        holder.btnStatus?.setOnClickListener(null)
 
         // Tampilkan tombol "Selesai" hanya jika progress >= 100
         if (progressPercent >= 100 && holder.btnStatus != null) {
@@ -57,14 +63,13 @@ class ChildGoalsAdapter(
             holder.btnStatus.text = "Selesai"
             holder.btnStatus.isEnabled = true
             holder.btnStatus.setOnClickListener {
+                holder.btnStatus.isEnabled = false
                 onComplete(goal)
             }
         } else {
             holder.btnStatus?.visibility = View.GONE
-            holder.btnStatus?.setOnClickListener(null)
         }
 
-        // klik item -> buka detail misalnya
         holder.itemView.setOnClickListener { onClick(goal) }
     }
 
@@ -81,7 +86,8 @@ class ChildGoalsAdapter(
     }
 
     private fun formatCurrency(amount: Long): String {
-        val nf = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
-        return nf.format(amount).replace(",00", "")
+        val nf = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        return nf.format(amount).replace("Rp", "Rp ").trim()
     }
+
 }

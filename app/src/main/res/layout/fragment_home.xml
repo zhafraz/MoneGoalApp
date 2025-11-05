@@ -325,7 +325,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🌟 Program Terpopuler"
+            android:text="🌟 Goals Terdekat"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#004D40"
@@ -342,7 +342,7 @@
             android:paddingHorizontal="16dp"
             tools:itemCount="2"
             tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_goal" />
+            tools:listitem="@layout/item_child_goal" />
 
     </LinearLayout>
 </ScrollView>

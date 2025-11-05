@@ -73,7 +73,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Aku Aimo, teman AI kamu! Yuk, tanya aku tentang ide, tips, atau beasiswa ✨"
+                            android:text="Aku Aimo, teman AI kamu! \nYuk, tanya aku seputar keuangan kamu ✨"
                             android:textColor="@color/warna_kecil"
                             android:textSize="14sp" />
                     </LinearLayout>

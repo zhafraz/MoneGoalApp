@@ -112,10 +112,10 @@ class HomeFragment : Fragment() {
                 if (document != null && document.exists()) {
                     tvUserName.text = document.getString("name") ?: ""
                     tvUserClass.text = document.getString("school") ?: ""
-                    val balance = document.getLong("balance") ?: 0
+                    val saldoAnak = document.getLong("saldoAnak") ?: 0
                     val points = document.getLong("points") ?: 0
 
-                    tvCurrentBalance.text = "Rp %,d".format(balance)
+                    tvCurrentBalance.text = "Rp %,d".format(saldoAnak)
                     tvCurrentPoints.text = points.toString()
                 }
             }
