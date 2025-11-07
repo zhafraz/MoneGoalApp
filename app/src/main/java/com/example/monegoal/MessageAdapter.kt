@@ -3,8 +3,8 @@ package com.example.monegoal
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import android.widget.TextView
 
 class MessageAdapter(
     private val items: MutableList<Message>
@@ -55,6 +55,16 @@ class MessageAdapter(
     fun addMessage(message: Message) {
         items.add(message)
         notifyItemInserted(items.size - 1)
+    }
+
+    // Update pesan terakhir (dipakai untuk efek typing)
+    fun updateLastMessage(text: String) {
+        if (items.isEmpty()) return
+        val lastIndex = items.size - 1
+        // pastikan pesan terakhir adalah pesan AI (safety)
+        val last = items[lastIndex]
+        items[lastIndex] = Message(text, isUser = false)
+        notifyItemChanged(lastIndex)
     }
 
     // Optional: clear semua pesan

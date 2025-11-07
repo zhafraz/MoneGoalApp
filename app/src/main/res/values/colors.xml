@@ -9,10 +9,12 @@
     <color name="secondary_50">#E8F5E9</color>
     <color name="secondary_500">#4CAF50</color>
     <color name="secondary_600">#43A047</color>
-
-
     <color name="warna_kapital">#004D40</color>
     <color name="warna_kecil">#B2DFDB</color>
+    <color name="warna_utama">#00897B</color>          <!-- teal-ish -->
+    <color name="warna_utama_dark">#00695C</color>
+
+    <color name="background_light">#E0F7FA</color>
 
     <!-- General Colors -->
     <color name="black">#FF000000</color>

@@ -17,7 +17,7 @@ object GeminiService {
     private val gson = Gson()
     private const val TAG = "GeminiService"
 
-    // System prompt untuk membatasi topik keuangan pelajar
+    // System prompt (tetap seperti sebelumnya)
     private val SYSTEM_PROMPT = """
     Kamu adalah asisten keuangan untuk anak sekolah SD sampai SMA/SMK.
     Tugasmu menjelaskan:
@@ -50,7 +50,6 @@ object GeminiService {
 
     suspend fun getChatResponse(prompt: String): String =
         withContext(Dispatchers.IO) {
-
             val effectivePrompt = "$SYSTEM_PROMPT\n\nPengguna: $prompt"
 
             val requestJson = mapOf(
@@ -87,10 +86,11 @@ object GeminiService {
                     throw Exception("Gemini error ${resp.code}: ${respStr.take(200)}")
                 }
 
-                return@withContext parseTextFromJsonSafe(respStr)
+                return@withContext sanitizeOutput(parseTextFromJsonSafe(respStr))
             }
         }
 
+    // parse text from JSON (sama seperti sebelumnya)
     private fun parseTextFromJsonSafe(raw: String): String {
         if (raw.isBlank()) return "Maaf, koneksi bermasalah. Coba lagi ya."
         return try {
@@ -125,5 +125,33 @@ object GeminiService {
             Log.e(TAG, "Parse fail: ${e.localizedMessage}")
             "Maaf, terjadi kesalahan. Coba ulangi ya."
         }
+    }
+
+    // Sanitize: hapus markdown emphasis, code fences, backticks, tiruan bullet-asterisks, dan whitespace berlebih
+    private fun sanitizeOutput(input: String): String {
+        var s = input
+
+        // 1) hapus code fences ```...```
+        s = s.replace(Regex("(?s)```.*?```"), " ")
+
+        // 2) hapus single-line backticks `...`
+        s = s.replace("`", " ")
+
+        // 3) hapus bold/italic markers **, __, * , _
+        s = s.replace(Regex("""\*\*|\*|__|_"""), " ")
+
+        // 4) jika ada "- " bullet di awal baris, ubah jadi "• "
+        s = s.replace(Regex("(?m)^\\s*-\\s+"), "• ")
+
+        // 5) hapus > blockquote markers
+        s = s.replace(Regex("(?m)^>\\s?"), "")
+
+        // 6) collapse multiple spaces/newlines
+        s = s.replace(Regex("[ \t]{2,}"), " ")
+        s = s.replace(Regex("\\n{3,}"), "\n\n")
+        s = s.trim()
+
+        // 7) Pastikan kalimat kapital depan huruf jika perlu (opsional) — disini kita tidak memaksakan terlalu banyak
+        return s
     }
 }

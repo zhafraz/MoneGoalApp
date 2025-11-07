@@ -1,9 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MoneGoal" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base theme -->
+    <style name="Base.Theme.MoneGoal" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Override atribut base bila perlu -->
     </style>
 
-    <style name="Theme.MoneGoal" parent="Base.Theme.MoneGoal" />
+    <!-- Theme aplikasi (gunakan ini di AndroidManifest) -->
+    <style name="Theme.MoneGoal" parent="Base.Theme.MoneGoal">
+        <item name="colorPrimary">@color/warna_utama</item>
+        <item name="colorPrimaryVariant">@color/warna_utama_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:windowBackground">@color/background_light</item>
+        <!-- jangan letakkan android:forceDarkAllowed di sini (minSdk < 29) -->
+    </style>
 </resources>
