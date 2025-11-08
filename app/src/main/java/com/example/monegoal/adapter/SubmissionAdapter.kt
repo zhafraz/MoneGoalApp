@@ -39,10 +39,6 @@ class SubmissionAdapter(
         // Format waktu
         val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID"))
         holder.tvTime.text = sdf.format(Date(item.createdAt))
-
-        holder.card.setOnClickListener {
-            onItemClick(item)
-        }
     }
 
     override fun getItemCount(): Int = list.size

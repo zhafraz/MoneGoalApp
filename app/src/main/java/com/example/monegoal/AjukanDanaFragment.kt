@@ -1,11 +1,14 @@
 package com.example.monegoal.ui.anak
 
+import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import com.example.monegoal.R
@@ -13,6 +16,8 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.NumberFormat
+import java.util.*
 
 class AjukanDanaFragment : Fragment() {
 
@@ -25,6 +30,7 @@ class AjukanDanaFragment : Fragment() {
 
     private var selectedPriority: String? = null
     private var selectedAmount: Int? = null
+    private var saldoAnak: Long = 0L  // ✅ simpan saldo anak di sini
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,7 +48,25 @@ class AjukanDanaFragment : Fragment() {
         setupPrioritySelection(view)
         setupSubmitButton()
 
+        // ✅ Ambil saldo anak dari Firestore
+        loadSaldoAnak()
+
         return view
+    }
+
+    private fun loadSaldoAnak() {
+        val user = auth.currentUser ?: return
+        db.collection("users").document(user.uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                saldoAnak = doc.getLong("saldoAnak")
+                    ?: doc.getLong("saldo")
+                            ?: doc.getLong("balance")
+                            ?: 0L
+            }
+            .addOnFailureListener {
+                saldoAnak = 0L
+            }
     }
 
     private fun setupNominalShortcuts(view: View) {
@@ -95,44 +119,76 @@ class AjukanDanaFragment : Fragment() {
 
     private fun setupSubmitButton() {
         btnAjukan.setOnClickListener {
-            val nominalText = inputNominal.text.toString()
-            val alasanText = inputAlasan.text.toString()
+            val nominalText = inputNominal.text.toString().trim()
+            val alasanText = inputAlasan.text.toString().trim()
 
+            // ✅ Validasi input kosong
             if (nominalText.isEmpty() || alasanText.isEmpty() || selectedPriority == null) {
-                Toast.makeText(requireContext(), "Lengkapi semua data dulu ya!", Toast.LENGTH_SHORT).show()
+                showDialog("Data Belum Lengkap", "Lengkapi semua data dulu ya sebelum mengajukan.")
+                return@setOnClickListener
+            }
+
+            val nominal = nominalText.toLongOrNull()
+            if (nominal == null || nominal <= 0) {
+                showDialog("Nominal Tidak Valid", "Masukkan nominal yang benar (lebih dari 0).")
+                return@setOnClickListener
+            }
+
+            // ✅ Cek saldo cukup
+            if (nominal > saldoAnak) {
+                showDialog(
+                    "Saldo Tidak Cukup",
+                    "Saldo kamu saat ini ${formatRupiah(saldoAnak)}, sedangkan pengajuan kamu sebesar ${formatRupiah(nominal)}.\n\nTurunkan jumlah pengajuan ya."
+                )
                 return@setOnClickListener
             }
 
             val user = auth.currentUser
             val childId = user?.uid
-            val childName = user?.displayName ?: inputAlasan // fallback - idealnya ambil nama dari profile
+            val childName = user?.displayName ?: "Anak"
 
-            // simpan dengan field yang konsisten / lengkap agar parent bisa menemukan dokumen
             val pengajuan = hashMapOf(
-                "nominal" to nominalText.toInt(),
-                "amount" to nominalText.toInt(),                // beberapa kode memakai "amount"
+                "nominal" to nominal,
+                "amount" to nominal,
                 "alasan" to alasanText,
                 "purpose" to alasanText,
                 "prioritas" to selectedPriority,
-                "status" to "pending",                           // gunakan status standar (pending)
-                "tanggal" to FieldValue.serverTimestamp(),       // gunakan serverTimestamp
+                "status" to "pending",
+                "tanggal" to FieldValue.serverTimestamp(),
                 "createdAt" to FieldValue.serverTimestamp(),
                 "anak" to childName,
                 "childName" to childName,
                 "childId" to childId
             )
 
-            // tulis ke collection 'pengajuan_dana' (kamu bisa juga duplikat ke 'submissions' jika perlu)
             db.collection("pengajuan_dana")
                 .add(pengajuan)
                 .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Pengajuan berhasil dikirim!", Toast.LENGTH_SHORT).show()
+                    showDialog(
+                        "Berhasil Diajukan 🎉",
+                        "Pengajuan kamu berhasil dikirim dan sedang menunggu persetujuan orang tua."
+                    )
                     inputNominal.setText("")
                     inputAlasan.setText("")
                 }
                 .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Gagal mengirim pengajuan 😢", Toast.LENGTH_SHORT).show()
+                    showDialog("Gagal", "Gagal mengirim pengajuan. Coba lagi nanti.")
                 }
         }
+    }
+
+    // 🔹 Helper dialog
+    private fun showDialog(title: String, message: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("Tutup", null)
+            .show()
+    }
+
+    // 🔹 Format uang ke Rupiah
+    private fun formatRupiah(amount: Long): String {
+        val nf = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        return nf.format(amount).replace("Rp", "Rp ").trim()
     }
 }

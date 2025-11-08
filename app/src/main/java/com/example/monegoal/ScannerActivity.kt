@@ -175,7 +175,8 @@ class ScannerActivity : AppCompatActivity() {
 
     /**
      * Ambil data user langsung saat scan agar tidak ada race.
-     * Prioritas saldo: saldoAnak -> balance -> saldo
+     * **Aturan baru:** pembayaran hanya boleh jika approvedLimit >= harga.
+     * Jika approvedLimit mencukupi -> commit transaksi: kurangi approvedLimit dan kurangi saldoAnak sebesar jumlah.
      */
     private fun handleScannedJsonWithConfirmation(raw: String) {
         try {
@@ -200,10 +201,10 @@ class ScannerActivity : AppCompatActivity() {
                 return
             }
 
+            // baca user doc real-time sebelum menampilkan konfirmasi
             db.collection("users").document(uid)
                 .get()
                 .addOnSuccessListener { doc ->
-                    // baca saldo anak dulu, fallback ke balance/saldo
                     val curSaldoAnak = doc.getLong("saldoAnak") ?: doc.getLong("balance") ?: doc.getLong("saldo") ?: 0L
                     val curApproved = when (val v = doc.get("approvedLimit")) {
                         is Number -> v.toLong()
@@ -211,12 +212,23 @@ class ScannerActivity : AppCompatActivity() {
                         else -> 0L
                     }
 
-                    // update cache
+                    // Update cache optional
                     cachedSaldoAnak = curSaldoAnak
                     cachedApprovedLimit = curApproved
+
                     Log.d("QR", "fresh read before confirm: saldoAnak=$curSaldoAnak, approved=$curApproved, harga=$harga")
 
-                    // Aturan yang kita jalankan: pembayaran harus <= saldoAnak (sumber dana).
+                    // RULE: require approvedLimit >= harga
+                    if (curApproved < harga) {
+                        runOnUiThread {
+                            Toast.makeText(this, "Izin (approvedLimit) tidak mencukupi untuk Rp ${String.format("%,d", harga)}", Toast.LENGTH_LONG).show()
+                            tvInstruction.text = "Izin tidak cukup"
+                        }
+                        isProcessing = false
+                        return@addOnSuccessListener
+                    }
+
+                    // Also ensure saldoAnak (actual funds) >= harga (so there's real money to charge)
                     if (curSaldoAnak < harga) {
                         runOnUiThread {
                             Toast.makeText(this, "Saldo anak tidak mencukupi untuk Rp ${String.format("%,d", harga)}", Toast.LENGTH_LONG).show()
@@ -255,7 +267,7 @@ class ScannerActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     Log.w("QR", "Gagal baca user doc: ${e.message}")
                     runOnUiThread {
-                        Toast.makeText(this, "Gagal memeriksa saldo: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Gagal memeriksa data user: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                     isProcessing = false
                 }
@@ -269,7 +281,11 @@ class ScannerActivity : AppCompatActivity() {
 
     /**
      * Commit pembayaran di dalam transaction.
-     * Baca field yang benar (saldoAnak, approvedLimit) dan update sesuai.
+     * - Require approvedLimit >= jumlah (double-check)
+     * - Require saldoAnak >= jumlah (double-check)
+     * - Kurangi approvedLimit dengan jumlah
+     * - Kurangi saldoAnak (atau balance/saldo) dengan jumlah
+     * - Tulis transaksi audit
      */
     private fun performPayment(toko: String, barang: String, jumlah: Long) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
@@ -281,7 +297,6 @@ class ScannerActivity : AppCompatActivity() {
         db.runTransaction { tr ->
             val userDoc = tr.get(userRef)
 
-            // baca saldoAnak (prioritas), fallback
             val curSaldoAnak = userDoc.getLong("saldoAnak") ?: userDoc.getLong("balance") ?: userDoc.getLong("saldo") ?: 0L
             val curApproved = when (val v = userDoc.get("approvedLimit")) {
                 is Number -> v.toLong()
@@ -291,24 +306,20 @@ class ScannerActivity : AppCompatActivity() {
 
             Log.d("QR", "inside transaction: curSaldoAnak=$curSaldoAnak, curApproved=$curApproved, jumlah=$jumlah")
 
-            // double-check saldo cukup
+            if (curApproved < jumlah) {
+                throw Exception("Izin (approvedLimit) tidak mencukupi saat commit")
+            }
             if (curSaldoAnak < jumlah) {
                 throw Exception("Saldo anak tidak mencukupi saat commit")
             }
 
-            // bagian yang "dipakai dari approval" untuk audit: gunakan sampai approvedLimit
-            val usedFromApproved = if (curApproved >= jumlah) jumlah else curApproved
-            // sumber pemotongan dana: saldoAnak dikurangi seluruh jumlah
-            val usedFromSaldoAnak = jumlah
+            val newApproved = (curApproved - jumlah).coerceAtLeast(0L)
+            val newSaldoAnak = (curSaldoAnak - jumlah).coerceAtLeast(0L)
 
-            val newApproved = (curApproved - usedFromApproved).coerceAtLeast(0L)
-            val newSaldoAnak = (curSaldoAnak - usedFromSaldoAnak).coerceAtLeast(0L)
+            // update approvedLimit
+            tr.update(userRef, "approvedLimit", newApproved)
 
-            // update approvedLimit jika ada perubahan
-            if (usedFromApproved > 0L) {
-                tr.update(userRef, "approvedLimit", newApproved)
-            }
-            // update saldoAnak / fallback field
+            // update saldoAnak / fallback
             if (userDoc.contains("saldoAnak")) {
                 tr.update(userRef, "saldoAnak", newSaldoAnak)
             } else if (userDoc.contains("balance")) {
@@ -316,18 +327,19 @@ class ScannerActivity : AppCompatActivity() {
             } else if (userDoc.contains("saldo")) {
                 tr.update(userRef, "saldo", newSaldoAnak)
             } else {
-                tr.update(userRef, "saldoAnak", newSaldoAnak) // create field if none
+                tr.update(userRef, "saldoAnak", newSaldoAnak)
             }
 
-            // catat transaksi
+            // catat transaksi (audit): tunjukkan berapa dikurangi dari approval dan saldo
             val txDoc = userRef.collection("transactions").document()
             val txData = mapOf(
                 "type" to "pengeluaran",
                 "toko" to toko,
                 "barang" to barang,
                 "amount" to jumlah,
-                "usedFromApproved" to usedFromApproved,
-                "usedFromSaldoAnak" to (usedFromSaldoAnak - usedFromApproved),
+                // both values same conceptually (approval acted as permission equal to amount consumed)
+                "usedFromApproved" to jumlah,
+                "usedFromSaldoAnak" to jumlah,
                 "createdAt" to FieldValue.serverTimestamp()
             )
             tr.set(txDoc, txData)

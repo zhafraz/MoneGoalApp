@@ -461,9 +461,11 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
         val userRef = db.collection("users").document(cid)
 
         db.runTransaction { tr ->
+            // --- Baca submission dan user (semua reads dulu) ---
             val subDoc = tr.get(docRef)
             if (!subDoc.exists()) throw Exception("Submission tidak ditemukan")
-            val currentStatus = subDoc.getString("status") ?: ""
+
+            val currentStatus = (subDoc.getString("status") ?: "").trim()
             val amount = when (val a =
                 subDoc.get("amount") ?: subDoc.get("nominal") ?: subDoc.get("amountRp")) {
                 is Number -> a.toLong()
@@ -471,59 +473,63 @@ class DetailAjuanAnakActivity : AppCompatActivity() {
                 else -> 0L
             }
 
-            // --- READ user doc within transaction (required) ---
+            // baca user doc (untuk update approvedLimit)
             val userDoc = tr.get(userRef)
+            if (!userDoc.exists()) throw Exception("User anak tidak ditemukan")
 
-            tr.update(
-                docRef,
-                mapOf("status" to newStatus, "updatedAt" to FieldValue.serverTimestamp())
-            )
+            val curApprovedLimit = when (val v = userDoc.get("approvedLimit")) {
+                is Number -> v.toLong()
+                is String -> v.toString().toLongOrNull() ?: 0L
+                else -> 0L
+            }
 
-            if ((newStatus.equals("approved", ignoreCase = true) || newStatus.contains(
-                    "setuju",
-                    true
-                ))
-                && !currentStatus.equals("approved", true)
-            ) {
-                val hasSaldoAnak = userDoc.contains("saldoAnak")
-                val hasSaldo = userDoc.contains("saldo")
-                val hasBalance = userDoc.contains("balance")
+            // --- Tulis perubahan status submission ---
+            tr.update(docRef, mapOf("status" to newStatus, "updatedAt" to FieldValue.serverTimestamp()))
 
-                when {
-                    hasSaldoAnak -> {
-                        val cur = userDoc.getLong("saldoAnak") ?: 0L
-                        tr.update(userRef, "saldoAnak", cur + amount)
-                    }
+            // Tentukan apakah newStatus masuk kategori "approved"
+            val newIsApproved = newStatus.equals("approved", ignoreCase = true) ||
+                    newStatus.contains("setuju", ignoreCase = true) ||
+                    newStatus.contains("disetujui", ignoreCase = true)
 
-                    hasSaldo -> {
-                        val cur = userDoc.getLong("saldo") ?: 0L
-                        tr.update(userRef, "saldo", cur + amount)
-                    }
+            val wasApproved = currentStatus.equals("approved", ignoreCase = true) ||
+                    currentStatus.contains("setuju", ignoreCase = true) ||
+                    currentStatus.contains("disetujui", ignoreCase = true)
 
-                    hasBalance -> {
-                        val cur = userDoc.getLong("balance") ?: 0L
-                        tr.update(userRef, "balance", cur + amount)
-                    }
+            // Jika melakukan approve sekarang, dan sebelumnya belum approved => tambah approvedLimit
+            if (newIsApproved && !wasApproved && amount > 0L) {
+                val newApproved = (curApprovedLimit + amount)
+                tr.update(userRef, "approvedLimit", newApproved)
 
-                    else -> {
-                        tr.update(userRef, "saldoAnak", amount)
-                    }
-                }
-
+                // catat audit transaksi (opsional tapi berguna)
                 val txCol = userRef.collection("transactions").document()
                 val txData = mapOf(
-                    "type" to "pemasukan",
-                    "category" to "topup_from_parent_on_approve",
+                    "type" to "approved_limit",
                     "amount" to amount,
-                    "timestamp" to FieldValue.serverTimestamp(),
-                    "note" to "Auto top-up saat approval pengajuan"
+                    "note" to "Limit ditambahkan saat approval pengajuan ${submissionId ?: subDoc.id}",
+                    "timestamp" to FieldValue.serverTimestamp()
                 )
                 tr.set(txCol, txData)
             }
+
+            // Jika sebelumnya sudah approved tetapi sekarang dibatalkan (rejected/pending) => kurangi approvedLimit
+            if (!newIsApproved && wasApproved && amount > 0L) {
+                val newApproved = (curApprovedLimit - amount).coerceAtLeast(0L)
+                tr.update(userRef, "approvedLimit", newApproved)
+
+                // catat audit revoke
+                val txCol = userRef.collection("transactions").document()
+                val txData = mapOf(
+                    "type" to "approved_limit_revoke",
+                    "amount" to amount,
+                    "note" to "Limit dikurangi saat pembatalan approval pengajuan ${submissionId ?: subDoc.id}",
+                    "timestamp" to FieldValue.serverTimestamp()
+                )
+                tr.set(txCol, txData)
+            }
+
         }.addOnSuccessListener {
             Toast.makeText(this, "Status diperbarui: $newStatus", Toast.LENGTH_SHORT).show()
             updateStatusHeader(newStatus)
-
             setResult(Activity.RESULT_OK)
             finish()
         }.addOnFailureListener { e ->

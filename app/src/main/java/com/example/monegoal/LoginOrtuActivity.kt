@@ -68,82 +68,95 @@ class LoginOrtuActivity : AppCompatActivity() {
 
         progressDialog?.show()
 
-        // cari anak (dok users) yang inviteCode == code
-        firestore.collection("users")
-            .whereEqualTo("inviteCode", code)
-            .limit(1)
+        val usersRef = firestore.collection("users")
+        val parentsRef = firestore.collection("parents")
+
+        // 1️⃣ Pastikan email ini BUKAN email anak
+        usersRef.whereEqualTo("email", email)
             .get()
-            .addOnSuccessListener { q ->
-                if (q.isEmpty) {
+            .addOnSuccessListener { userQuery ->
+                if (!userQuery.isEmpty) {
                     progressDialog?.dismiss()
-                    Toast.makeText(this, "Kode undangan tidak ditemukan.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        "Email ini terdaftar sebagai akun anak. Gunakan akun orang tua untuk login.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     return@addOnSuccessListener
                 }
 
-                val childDoc = q.documents[0]
-                val childUid = childDoc.id
-                val childName = childDoc.getString("name") ?: "Anak"
-
-                // id dok parent di koleksi "parents" menggunakan encoding email
-                val parentDocId = encodeEmailToId(email)
-                val parentRef = firestore.collection("parents").document(parentDocId)
-                val childRef = firestore.collection("users").document(childUid)
-
-                // ambil snapshot parent untuk memutuskan create/update
-                parentRef.get()
-                    .addOnSuccessListener { pDoc ->
-                        val batch = firestore.batch()
-
-                        if (pDoc.exists()) {
-                            // jika dokumen parent ada, update fields (merge) dan tambahkan childUid jika belum ada
-                            // gunakan arrayUnion untuk childrenUIDs
-                            batch.set(parentRef, mapOf(
-                                "email" to email,
-                                "updatedAt" to FieldValue.serverTimestamp()
-                            ), com.google.firebase.firestore.SetOptions.merge())
-
-                            // tambahkan childUid ke array (arrayUnion aman untuk duplikat)
-                            batch.update(parentRef, "childrenUIDs", FieldValue.arrayUnion(childUid))
-
-                            // jika Anda ingin maintain totalChildren, gunakan increment
-                            batch.update(parentRef, "totalChildren", FieldValue.increment(1))
-                        } else {
-                            // buat dokumen parent baru
-                            val parentData = hashMapOf(
-                                "email" to email,
-                                "name" to email.substringBefore("@").replace('.', ' ').capitalizeWords(),
-                                "childrenUIDs" to arrayListOf(childUid),
-                                "totalChildren" to 1,
-                                "createdAt" to FieldValue.serverTimestamp(),
-                                "updatedAt" to FieldValue.serverTimestamp()
-                            )
-                            batch.set(parentRef, parentData)
+                // 2️⃣ Cari anak berdasarkan kode undangan
+                usersRef.whereEqualTo("inviteCode", code)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener { q ->
+                        if (q.isEmpty) {
+                            progressDialog?.dismiss()
+                            Toast.makeText(this, "Kode undangan tidak ditemukan.", Toast.LENGTH_LONG).show()
+                            return@addOnSuccessListener
                         }
 
-                        // update dok anak: tambahkan parentDocId ke field "parents"
-                        // (disini kami menyimpan parentDocId agar konsisten dengan encodeEmailToId)
-                        batch.update(childRef, "parents", FieldValue.arrayUnion(parentDocId))
+                        val childDoc = q.documents[0]
+                        val childUid = childDoc.id
+                        val childName = childDoc.getString("name") ?: "Anak"
 
-                        // commit batch
-                        batch.commit()
-                            .addOnSuccessListener {
-                                progressDialog?.dismiss()
-                                Toast.makeText(this, "Berhasil terhubung ke $childName", Toast.LENGTH_SHORT).show()
+                        val parentDocId = encodeEmailToId(email)
+                        val parentRef = parentsRef.document(parentDocId)
+                        val childRef = usersRef.document(childUid)
 
-                                // mulai HomeOrtuActivity dan kirim parentEmail supaya Home tahu siapa parent
-                                val intent = Intent(this@LoginOrtuActivity, HomeOrtuActivity::class.java)
-                                intent.putExtra("parentEmail", email)
-                                startActivity(intent)
-                                finish()
+                        parentRef.get()
+                            .addOnSuccessListener { pDoc ->
+                                val batch = firestore.batch()
+
+                                if (pDoc.exists()) {
+                                    batch.set(parentRef, mapOf(
+                                        "email" to email,
+                                        "updatedAt" to FieldValue.serverTimestamp()
+                                    ), com.google.firebase.firestore.SetOptions.merge())
+
+                                    batch.update(parentRef, "childrenUIDs", FieldValue.arrayUnion(childUid))
+                                    batch.update(parentRef, "totalChildren", FieldValue.increment(1))
+                                } else {
+                                    val parentData = hashMapOf(
+                                        "email" to email,
+                                        "name" to email.substringBefore("@").replace('.', ' ').capitalizeWords(),
+                                        "childrenUIDs" to arrayListOf(childUid),
+                                        "totalChildren" to 1,
+                                        "createdAt" to FieldValue.serverTimestamp(),
+                                        "updatedAt" to FieldValue.serverTimestamp()
+                                    )
+                                    batch.set(parentRef, parentData)
+                                }
+
+                                batch.update(childRef, "parents", FieldValue.arrayUnion(parentDocId))
+
+                                batch.commit()
+                                    .addOnSuccessListener {
+                                        progressDialog?.dismiss()
+                                        Toast.makeText(
+                                            this,
+                                            "Berhasil terhubung ke $childName",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        val intent = Intent(this@LoginOrtuActivity, HomeOrtuActivity::class.java)
+                                        intent.putExtra("parentEmail", email)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        progressDialog?.dismiss()
+                                        Toast.makeText(this, "Gagal menghubungkan: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                    }
                             }
                             .addOnFailureListener { e ->
                                 progressDialog?.dismiss()
-                                Toast.makeText(this, "Gagal menghubungkan: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this, "Gagal membaca data parent: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                             }
                     }
                     .addOnFailureListener { e ->
                         progressDialog?.dismiss()
-                        Toast.makeText(this, "Gagal membaca data parent: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Kesalahan jaringan: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                     }
             }
             .addOnFailureListener { e ->
